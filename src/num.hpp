@@ -1,3 +1,5 @@
+#include "util.h"
+
 namespace num {
     // constructors
     template <int modulo>
@@ -14,6 +16,11 @@ namespace num {
     template <int modulo>
     constexpr bool number<modulo>::operator ==(const num& other) {
         return val == other.val;
+    }
+
+    template <int modulo>
+    constexpr bool number<modulo>::operator !=(const num& other) {
+        return !(val == other.val);
     }
 
     template <int modulo>

@@ -1,11 +1,6 @@
 #ifndef _NUM_H
 #define _NUM_H
 
-#include <array>
-#include <utility>
-
-#include "util.h"
-
 namespace num {
 
     template <int modulo>
@@ -24,6 +19,7 @@ namespace num {
 
         // equality
         constexpr bool operator ==(const num&);
+        constexpr bool operator !=(const num&);
 
         constexpr num operator -();
 

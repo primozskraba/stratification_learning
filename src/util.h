@@ -1,6 +1,9 @@
 #ifndef _UTIL_H
 #define _UTIL_H
 
+#include <array>
+#include <utility>
+
 namespace util {
 
     constexpr int mod(const int& val, const int& base);
