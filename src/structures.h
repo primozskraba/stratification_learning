@@ -42,9 +42,6 @@ namespace la {
         int rows() const;
         /// returns the number of columns
         int cols() const;
-
-    private:
-        static const number& binary_search(const int& row_n, const col_vector&);
     };
 
     using BinaryMatrix = Matrix<num::binary>;
