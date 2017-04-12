@@ -28,12 +28,11 @@ namespace la {
         Matrix(std::initializer_list<std::vector<number>>);
 
         // copy/move operations
-        // constructors
+        // copy
         Matrix(const Mat&);
-        Matrix(Mat&&);
-
-        // assignments
         Mat& operator =(const Mat&);
+        // move
+        Matrix(Mat&&);
         Mat& operator =(Mat&&);
 
         // element access
