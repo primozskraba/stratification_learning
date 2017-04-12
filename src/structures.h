@@ -16,11 +16,11 @@ namespace la {
         // type aliases
         using entry = std::pair<int,number>;
         using col_vector = std::vector<entry>;
-        using matrix = std::vector<col_vector>;
+        using col_matrix = std::vector<col_vector>;
         using Mat = Matrix<number>;
 
         int row_dim;
-        matrix mat;     // stores the column vectors
+        col_matrix mat;     // stores the column vectors
     public:
         /// constructs an empty matrix with the given number of rows and columns
         Matrix(const int& rows, const int& cols);

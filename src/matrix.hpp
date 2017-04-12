@@ -37,17 +37,17 @@ namespace la {
         mat(other.mat) {}
 
     template <typename number>
+    Matrix<number>::Matrix(Mat&& other):
+        row_dim(other.row_dim),
+        mat(std::move(other.mat)) {}
+
+    template <typename number>
     Matrix<number>& Matrix<number>::operator =(const Mat& other) {
         // provide the strong guarantee (no data should be changed in case of exception)
         Mat temp(other);
         std::swap(*this, temp);
         return *this;
     }
-
-    template <typename number>
-    Matrix<number>::Matrix(Mat&& other):
-        row_dim(other.row_dim),
-        mat(std::move(other.mat)) {}
 
     template <typename number>
     Matrix<number>& Matrix<number>::operator =(Mat&& other) {
