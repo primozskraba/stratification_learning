@@ -1,0 +1,17 @@
+/build
+
+
+# cmake
+/CMakeFiles
+/CTestTestfile.cmake
+/CMakeCache.txt
+/cmake_install.cmake
+/Testing
+/Makefile
+
+# unit tests
+/runUnitTests
+/Testing
+
+# compiled files
+*.a
