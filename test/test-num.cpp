@@ -16,14 +16,14 @@ TEST(types, binary) {
     const binary one2 = one + zero;
     const binary one3 = one + 4;
 
-    ASSERT_EQ(zero1, zero);
-    ASSERT_EQ(zero2, zero);
-    ASSERT_EQ(zero3, zero);
-    ASSERT_EQ(one1, one);
-    ASSERT_EQ(one2, one);
-    ASSERT_EQ(one3, one);
-    ASSERT_EQ(one3, 3);
-    ASSERT_EQ(one3, -1);
+    ASSERT_EQ(zero, zero1);
+    ASSERT_EQ(zero, zero2);
+    ASSERT_EQ(zero, zero3);
+    ASSERT_EQ(one, one1);
+    ASSERT_EQ(one, one2);
+    ASSERT_EQ(one, one3);
+    ASSERT_EQ(3, one3);
+    ASSERT_EQ(-1, one3);
 }
 
 TEST(num, ternary) {
@@ -31,16 +31,16 @@ TEST(num, ternary) {
     const ternary one = -14;
     const ternary two = -13;
     
-    ASSERT_EQ(zero, 0);
-    ASSERT_EQ(one, 1);
-    ASSERT_EQ(two, 2);
-    ASSERT_EQ(one + two, zero);
-    ASSERT_EQ(one + one, two);
-    ASSERT_EQ(two + two, one);
-    ASSERT_EQ(3*one, zero);
-    ASSERT_EQ(16*two, 2);
-    ASSERT_EQ(-two, -2);
-    ASSERT_EQ(-one, 2);
+    ASSERT_EQ(0, zero);
+    ASSERT_EQ(1, one);
+    ASSERT_EQ(2, two);
+    ASSERT_EQ(zero, one + two);
+    ASSERT_EQ(two, one + one);
+    ASSERT_EQ(one, two + two);
+    ASSERT_EQ(zero, 3*one);
+    ASSERT_EQ(2, 16*two);
+    ASSERT_EQ(-2, -two);
+    ASSERT_EQ(2, -one);
 }
 
 TEST(num, inverse) {
@@ -49,7 +49,7 @@ TEST(num, inverse) {
         const number<modulo> val = i;
         const number<modulo> inv = val.inverse();
         const number<modulo> prod = val * inv;
-        ASSERT_EQ(val, i);
-        ASSERT_EQ(prod, 1);
+        ASSERT_EQ(i, val);
+        ASSERT_EQ(1, prod);
     }
 }

@@ -1,6 +1,8 @@
 #ifndef _NUM_H
 #define _NUM_H
 
+#include <iostream>
+
 namespace num {
 
     template <int modulo>
@@ -23,16 +25,24 @@ namespace num {
 
         constexpr num operator -();
 
-        // addition
+        // basic operations
         constexpr num operator +(const num&);
         constexpr num operator -(const num&);
         constexpr num operator *(const num&);
+
+        num& operator +=(const num&);
     };
+
+    template <int modulo>
+    constexpr bool operator ==(const int&, const number<modulo>&);
 
     template <int modulo>
     constexpr number<modulo> operator +(const int&, const number<modulo>&);
     template <int modulo>
     constexpr number<modulo> operator *(const int&, const number<modulo>&);
+
+    template <int modulo>
+    std::ostream& operator <<(std::ostream&, const number<modulo>&);
 
     // type aliases
     using binary = number<2>;

@@ -44,6 +44,17 @@ namespace num {
     }
 
     template <int modulo>
+    number<modulo>& number<modulo>::operator +=(const num& b) {
+        *this = *this + b;
+        return *this;
+    }
+
+    template <int modulo>
+    constexpr bool operator ==(const int& a, const number<modulo>& b) {
+        return b == a;
+    }
+
+    template <int modulo>
     constexpr number<modulo> operator +(const int& a, const number<modulo>& b) {
         return b + a;
     }
@@ -52,4 +63,11 @@ namespace num {
     constexpr number<modulo> operator *(const int& a, const number<modulo>& b) {
         return b * a;
     }
+
+    template <int modulo>
+    std::ostream& operator <<(std::ostream& os, const number<modulo>& num) {
+        os << num.value();
+        return os;
+    }
+
 }
