@@ -115,8 +115,59 @@ namespace la {
     }
 
     template <typename number>
-    void Vector<number>::add(const Vec& b, const Vec& result) const {
+    void Vector<number>::add(const Vec& b, Vec& result) const {
         assert(dim() == b.dim());
+
+        // dimension
+        result.dimension = dim();
+
+        // the values
+        vector& result_vec = result.vect;
+
+        if (!result_vec.empty()) { result_vec.clear(); }
+        result_vec.reserve(dim() + b.dim());
+
+        size_t a_idx = 0;
+        size_t b_idx = 0;
+
+        // merge the elements the two vectors have in common
+        while (a_idx < vect.size() && b_idx < b.vect.size()) {
+            const entry& entry_a = vect[a_idx];
+            const entry& entry_b = b.vect[b_idx];
+            
+            if (entry_a.first == entry_b.first) {
+                const number sum = entry_a.second + entry_b.second;
+                if (sum != 0) {
+                    result_vec.push_back({ entry_a.first, sum });
+                }
+                a_idx++;
+                b_idx++;
+            }
+            else if (entry_a.first < entry_b.first) {
+                result_vec.push_back(entry_a);
+                a_idx++;
+            }
+            else {
+                result_vec.push_back(entry_b);
+                b_idx++;
+            }
+        }
+
+        // merge the rest
+        while (a_idx < vect.size()) {
+            result_vec.push_back(vect[a_idx]);
+            a_idx++;
+        }
+        while (b_idx < b.vect.size()) {
+            result_vec.push_back(b.vect[b_idx]);
+            b_idx++;
+        }
+    }
+
+    template <typename number>
+    Vector<number> operator +(const Vector<number>& v1, const Vector<number>& v2) {
+        Vector<number> result {v1.dim()};  v1.add(v2, result);
+        return result;
     }
 
     ////////////////////////////////////////////
@@ -253,6 +304,18 @@ namespace la {
     Matrix<number> operator *(const Matrix<number>& A, const Matrix<number>& B) {
         Matrix<number> C;   A.multiply(B, C);
         return C;
+    }
+
+    template <typename number>
+    std::ostream& operator <<(std::ostream& os, const Vector<number>& vec) {
+        const int dim = vec.dim();
+        for (int i = 0; i < dim; i++) {
+            os << vec[i];
+            if (i < dim - 1) {
+                os << ", ";
+            }
+        }
+        return os;
     }
 
     template <typename number>

@@ -56,6 +56,9 @@ namespace la {
         void add(const Vec&, Vec&) const;
     };
 
+    template <typename number>
+    Vector<number> operator +(const Vector<number>&, const Vector<number>&);
+
     using BinaryVector = Vector<binary>;
     using TernaryVector = Vector<ternary>;
 
@@ -118,6 +121,8 @@ namespace la {
     Matrix<number> operator *(const Matrix<number>&, const Matrix<number>&);
 
     // I/O
+    template <typename number>
+    std::ostream& operator <<(std::ostream&, const Vector<number>&);
     template <typename number>
     std::ostream& operator <<(std::ostream&, const Matrix<number>&);
 
