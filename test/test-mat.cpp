@@ -1,4 +1,4 @@
-#include "structures.h"
+#include "linalg.h"
 
 #include "gtest/gtest.h"
 

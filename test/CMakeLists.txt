@@ -35,7 +35,8 @@ set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 # include_directories(../src)
 
 add_library(num_lib ../src/num.cpp)
-add_library(struct_lib ../src/structures.cpp)
+add_library(linalg_lib ../src/linalg.cpp)
+# add_library(struct_lib ../src/struct.cpp)
 
 ##############
 # Unit Tests

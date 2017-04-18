@@ -10,25 +10,25 @@ namespace num {
         // internal alias
         using num = number<modulo>;
 
-        int val{0};    // XXX consider changing to something else
+        int val;    // XXX consider changing to something else
     public:
-        constexpr number(const int&);
-        constexpr number(const num&);
+        constexpr number(const int& val=0);
+        constexpr number(const num& val=0);
 
-        constexpr int value() { return val; }
+        constexpr int value() const { return val; }
 
-        constexpr num inverse();
+        constexpr num inverse() const;
 
         // equality
-        constexpr bool operator ==(const num&);
-        constexpr bool operator !=(const num&);
+        constexpr bool operator ==(const num&) const;
+        constexpr bool operator !=(const num&) const;
 
-        constexpr num operator -();
+        constexpr num operator -() const;
 
         // basic operations
-        constexpr num operator +(const num&);
-        constexpr num operator -(const num&);
-        constexpr num operator *(const num&);
+        constexpr num operator +(const num&) const;
+        constexpr num operator -(const num&) const;
+        constexpr num operator *(const num&) const;
 
         num& operator +=(const num&);
     };

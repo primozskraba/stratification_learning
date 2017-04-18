@@ -1,6 +1,7 @@
 #include "util.h"
 
 namespace num {
+
     // constructors
     template <int modulo>
     constexpr number<modulo>::number(const int& _val) : val(util::mod(_val, modulo)) {}
@@ -8,38 +9,38 @@ namespace num {
     constexpr number<modulo>::number(const num& other) : num(other.val) {}
 
     template <int modulo>
-    inline constexpr number<modulo> number<modulo>::inverse() {
+    inline constexpr number<modulo> number<modulo>::inverse() const {
         return util::inverse<modulo>(val);
     }
 
     // operators
     template <int modulo>
-    constexpr bool number<modulo>::operator ==(const num& other) {
+    constexpr bool number<modulo>::operator ==(const num& other) const {
         return val == other.val;
     }
 
     template <int modulo>
-    constexpr bool number<modulo>::operator !=(const num& other) {
+    constexpr bool number<modulo>::operator !=(const num& other) const {
         return !(val == other.val);
     }
 
     template <int modulo>
-    constexpr number<modulo> number<modulo>::operator -() {
+    constexpr number<modulo> number<modulo>::operator -() const {
         return modulo - val;
     }
 
     template <int modulo>
-    constexpr number<modulo> number<modulo>::operator +(const num& b) {
+    constexpr number<modulo> number<modulo>::operator +(const num& b) const {
         return val + b.val;
     }
 
     template <int modulo>
-    constexpr number<modulo> number<modulo>::operator -(const num& b) {
+    constexpr number<modulo> number<modulo>::operator -(const num& b) const {
         return *this + (-b);
     }
 
     template <int modulo>
-    constexpr number<modulo> number<modulo>::operator *(const num& b) {
+    constexpr number<modulo> number<modulo>::operator *(const num& b) const {
         return val * b.val;
     }
 

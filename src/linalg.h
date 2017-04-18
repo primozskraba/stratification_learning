@@ -130,6 +130,6 @@ namespace la {
     using TernaryMatrix = Matrix<ternary>;
 }
 
-#include "matrix.hpp"
+#include "linalg.hpp"
 
 #endif
