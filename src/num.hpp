@@ -4,7 +4,7 @@ namespace num {
 
     // constructors
     template <int modulo>
-    constexpr number<modulo>::number(const int& _val) : val(util::mod(_val, modulo)) {}
+    constexpr number<modulo>::number(const int& _val) : val(util::mod<modulo>(_val)) {}
     template <int modulo>
     constexpr number<modulo>::number(const num& other) : num(other.val) {}
 

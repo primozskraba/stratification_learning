@@ -24,6 +24,20 @@ TEST(Matrix, initializer_list) {
     ASSERT_EQ(1, I(2,2));
 }
 
+TEST(Matrix, vector_constructor) {
+    BinaryVector b0 = { 1, 0, 1 };
+    BinaryVector b1 = { 0, 1, 1 };
+    
+    BinaryMatrix A { b0, b1 };
+
+    ASSERT_EQ(1, A(0,0));
+    ASSERT_EQ(0, A(1,0));
+    ASSERT_EQ(1, A(2,0));
+    ASSERT_EQ(0, A(0,1));
+    ASSERT_EQ(1, A(1,1));
+    ASSERT_EQ(1, A(2,1));
+}
+
 TEST(Matrix, transpose) {
     TernaryMatrix A = {
         {2, 1, 0},

@@ -6,14 +6,15 @@
 
 namespace util {
 
-    constexpr int mod(const int& val, const int& base);
+    template <int base>
+    constexpr int mod(const int& val);
 
     namespace helpers {
         template <int modulo>
         constexpr int get_inverse_single(const int& val, const int& inv_candidate) {
-            return inv_candidate == 0 ? 0 : (mod(val*inv_candidate, modulo) == 1 ? inv_candidate : get_inverse_single<modulo>(val, inv_candidate-1));
+            return inv_candidate == 0 ? 0 : (mod<modulo>(val*inv_candidate) == 1 ? inv_candidate : get_inverse_single<modulo>(val, inv_candidate-1));
         }
-        
+
         template <int modulo, int... Is>
         constexpr std::array<int, modulo> calc_inverses(std::integer_sequence<int,Is...>) {
             return std::array<int,modulo>{{ get_inverse_single<modulo>(Is, modulo-1)... }};
@@ -28,8 +29,14 @@ namespace util {
         constexpr std::array<int,modulo> InverseHelper<modulo>::inverses;
     }
 
-    constexpr int mod(const int& val, const int& base) {
-        return val >= 0 ? val % base : mod(val + (-val / base + 1)*base, base);
+    template <int base>
+    constexpr int mod(const int& val) {
+        return (val % base + base) % base;
+    }
+
+    template <>
+    constexpr int mod<2>(const int& val) {
+        return val & 0x1;
     }
 
     template <int modulo>

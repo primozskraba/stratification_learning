@@ -28,6 +28,17 @@ namespace la {
     }
 
     template <typename number>
+    Vector<number>::Vector(const int& dim, const entry& entry):
+            vect(),
+            dimension(dim) {
+        assert(0 <= entry.first && entry.first < dim);
+
+        if (entry.second != 0) {
+            vect.push_back(entry);
+        }
+    }
+
+    template <typename number>
     Vector<number>::Vector(const Vec& other):
             vect(other.vect),
             dimension(other.dimension) {}
@@ -36,7 +47,7 @@ namespace la {
     Vector<number>& Vector<number>::operator =(const Vec& other) {
         // strong guarantee (no data should be changed in case of exception)
         Vec temp(other);
-        std::swap(*this, other);
+        std::swap(*this, temp);
         return *this;
     }
 
@@ -72,6 +83,22 @@ namespace la {
     template <typename number>
     void Vector<number>::make_zero() {
         vect.clear();
+    }
+
+    template <typename number>
+    bool Vector<number>::is_zero() const {
+        return vect.empty();
+    }
+
+    template <typename number>
+    int Vector<number>::pivot_dim() const {
+        return is_zero() ? -1 : vect.back().first;
+    }
+
+    template <typename number>
+    number Vector<number>::pivot() const {
+        assert(!is_zero());
+        return vect.back().second;
     }
 
     template <typename number>
@@ -134,7 +161,7 @@ namespace la {
         while (a_idx < vect.size() && b_idx < b.vect.size()) {
             const entry& entry_a = vect[a_idx];
             const entry& entry_b = b.vect[b_idx];
-            
+
             if (entry_a.first == entry_b.first) {
                 const number sum = entry_a.second + entry_b.second;
                 if (sum != 0) {
@@ -162,6 +189,61 @@ namespace la {
             result_vec.push_back(b.vect[b_idx]);
             b_idx++;
         }
+    }
+
+    template <typename number>
+    void Vector<number>::add(const Vec& b, const number& k, Vec& result) const {
+        assert(dim() == b.dim());
+
+        result.dimension = dim();
+        vector& result_vec = result.vect;
+
+        if (!result_vec.empty()) { result_vec.clear(); }
+        result_vec.reserve(dim() + b.dim());
+
+        size_t a_idx = 0;
+        size_t b_idx = 0;
+
+        // merge the elements the two vectors have in common
+        while (a_idx < vect.size() && b_idx < b.vect.size()) {
+            const entry& entry_a = vect[a_idx];
+            const entry& entry_b = b.vect[b_idx];
+
+            if (entry_a.first == entry_b.first) {
+                const number sum = entry_a.second + k*entry_b.second;
+                if (sum != 0) {
+                    result_vec.push_back({ entry_a.first, sum });
+                }
+                a_idx++;
+                b_idx++;
+            }
+            else if (entry_a.first < entry_b.first) {
+                result_vec.push_back(entry_a);
+                a_idx++;
+            }
+            else {
+                const number prod = k*entry_b.second;
+                if (prod != 0) { result_vec.push_back({ entry_b.first, prod }); }
+                b_idx++;
+            }
+        }
+
+        // merge the rest
+        while (a_idx < vect.size()) {
+            result_vec.push_back(vect[a_idx]);
+            a_idx++;
+        }
+        while (b_idx < b.vect.size()) {
+            const number prod = k*b.vect[b_idx].second;
+            if (prod != 0) { result_vec.push_back({ b.vect[b_idx].first, prod }); }
+            b_idx++;
+        }
+    }
+
+    template <typename number>
+    void Vector<number>::add_multiple(const Vec& vec, const number& k) {
+        Vec result(dim()); add(vec, k, result);
+        std::swap(*this, result);
     }
 
     template <typename number>
@@ -195,6 +277,19 @@ namespace la {
             }
         }
     }
+
+    template <typename number>
+    template <typename... Vecs>
+    Matrix<number>::Matrix(const vector& b0, Vecs const&... vects):
+            Matrix<number>(vects...) {
+
+        mat.insert(mat.begin(), b0);
+    }
+
+    template <typename number>
+    Matrix<number>::Matrix(const vector& vec):
+            row_dim(vec.dim()),
+            mat({ vec }) {}
 
     template <typename number>
     Matrix<number>::Matrix(const Mat& other):
@@ -239,6 +334,12 @@ namespace la {
     }
 
     template <typename number>
+    const typename Matrix<number>::vector& Matrix<number>::operator [](const int& colN) const {
+        assert(0 <= colN && colN < cols());
+        return mat[colN];
+    }
+
+    template <typename number>
     int Matrix<number>::rows() const {
         return row_dim;
     }
@@ -251,6 +352,18 @@ namespace la {
     template <typename number>
     void Matrix<number>::resize(const int& rows, const int& cols) {
         *this = Mat(rows, cols);
+    }
+
+    template <typename number>
+    void Matrix<number>::make_identity(const int& dim) {
+        row_dim = dim;
+
+        mat.clear();
+        mat.reserve(dim);
+
+        for (int i = 0; i < dim; i++) {
+            mat.push_back(vector(dim, { i, 1 }));
+        }
     }
 
     template <typename number>
@@ -268,7 +381,7 @@ namespace la {
 
     template <typename number>
     void Matrix<number>::multiply(const Mat& B, Mat& C) const {
-        assert(cols() == other.rows());
+        assert(cols() == B.rows());
 
         const int out_rows = rows();
         const int out_cols = B.cols();
@@ -278,10 +391,10 @@ namespace la {
         // index this by rows, so it will be easier to multiply
         const Mat transposed = la::transpose(*this);
 
-        const sparse_matrix A_rows = transposed.mat;
-        const sparse_matrix B_cols = B.mat;
+        const SparseMatrix A_rows = transposed.mat;
+        const SparseMatrix B_cols = B.mat;
 
-        sparse_matrix& C_cols = C.mat;
+        SparseMatrix& C_cols = C.mat;
 
         for (int col_n = 0; col_n < out_cols; col_n++) {
             vector& out_col = C_cols[col_n];
@@ -295,6 +408,22 @@ namespace la {
     }
 
     template <typename number>
+    void Matrix<number>::multiply(const vector& vec, vector& result) const {
+        assert(vec.dim() == cols());
+        assert(rows() == result.dim());
+
+        if (!result.is_zero()) { result.make_zero(); }
+
+        // construct the result as a linear combination of the (column) vectors
+        // in this matrix. Use only the vectors with corresponding non-zero
+        // entries in 'vec'
+        for (size_t entryN = 0; entryN < vec.vect.size(); entryN++) {
+            const entry& entry = vec.vect[entryN];
+            result.add_multiple(this->operator[](entry.first), entry.second);
+        }
+    }
+
+    template <typename number>
     Matrix<number> transpose(const Matrix<number>& A) {
         Matrix<number> transposed;  A.transpose(transposed);
         return transposed;
@@ -304,6 +433,73 @@ namespace la {
     Matrix<number> operator *(const Matrix<number>& A, const Matrix<number>& B) {
         Matrix<number> C;   A.multiply(B, C);
         return C;
+    }
+
+    template <typename number>
+    void Matrix<number>::decompose(Mat& kernel, Mat& image) const {
+        const int col_dim = cols();
+        // copy the rows of this matrix into the image and perform gaussian elimination
+        image = *this;
+        kernel.resize(col_dim, 0);
+
+        Mat op_follower;    op_follower.make_identity(col_dim);
+
+        // use gaussian elimination, to eliminate as many columns as possible
+        // the ones that cannot be eliminated are in the image
+        // assume a certain structure:
+        // columns with lower indexes do not have pivots in rows with higher indexes
+        // once a pivot is found in row k, a new one cannot appear in rows < k
+
+        SparseMatrix& im = image.mat;
+        int kernel_cols = 0;
+        for (int colN = 0; colN < col_dim; colN++) {
+            vector& curr_col = im[colN];
+            bool change = true;
+
+            while (!curr_col.is_zero() && change) {
+                change = false;
+                const int pivot_dim = curr_col.pivot_dim();
+
+                for (int eliminatorN = colN-1; eliminatorN >= 0; eliminatorN--) {
+                    const vector& eliminator = im[eliminatorN];
+                    if (eliminator.pivot_dim() == pivot_dim) {
+                        const number pivot_inv = eliminator.pivot().inverse();
+                        curr_col.add_multiple(eliminator, pivot_inv);
+                        op_follower.mat[colN].add_multiple(op_follower[eliminatorN], pivot_inv);
+                        change = true;
+                        break;
+                    }
+                }
+            }
+
+            if (curr_col.is_zero()) {
+                ++kernel_cols;
+            }
+        }
+
+        // construct the kernel
+        kernel.resize(col_dim, kernel_cols);
+        int kernel_col = 0;
+        for (int colN = 0; colN < col_dim; colN++) {
+            if (image[colN].is_zero()) {
+                kernel.mat[kernel_col++] = std::move(op_follower[colN]);
+            }
+        }
+
+        // remove the zero vectors from the image
+        const static auto is_zero_pred = [](const vector& vec) { return vec.is_zero(); };
+        const auto last = std::remove_if(im.begin(), im.end(), is_zero_pred);
+        im.erase(last, im.end());
+    }
+
+    template <typename number>
+    void multiply(const Matrix<number>& A, const Matrix<number>& B, Matrix<number>& C) {
+        A.multiply(B, C);
+    }
+
+    template <typename number>
+    void multiply(const Matrix<number>& A, const Vector<number>& x, Vector<number>& y) {
+        A.multiply(x, y);
     }
 
     template <typename number>

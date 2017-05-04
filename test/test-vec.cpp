@@ -44,4 +44,10 @@ TEST(Vector, sum) {
 
     ASSERT_EQ(c, a + b);
     ASSERT_EQ(z, x + y);
+    
+    a.add_multiple(b, 2);
+    x.add_multiple(y, -1);
+
+    ASSERT_EQ(TernaryVector({ 0, 1, 0, 0, 1, 2, 1, 1 }), a);
+    ASSERT_EQ(TernaryVector({ 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 }), x);
 }

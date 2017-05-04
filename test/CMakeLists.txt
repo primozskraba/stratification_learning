@@ -27,8 +27,10 @@ include_directories(${GTEST_INCLUDE_DIRS})
 # target_link_libraries   (buildComplex ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES})
       
 
-set(CMAKE_BUILD_TYPE Release)
-#set(CMAKE_BUILD_TYPE Debug)
+# BUILD RELEASE / DEBUG
+#set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+
 enable_testing()
 set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 
@@ -36,7 +38,7 @@ set(PROJECT_TEST_NAME ${PROJECT_NAME_STR}_test)
 
 add_library(num_lib ../src/num.cpp)
 add_library(linalg_lib ../src/linalg.cpp)
-# add_library(struct_lib ../src/struct.cpp)
+add_library(struct_lib ../src/struct.cpp)
 
 ##############
 # Unit Tests
