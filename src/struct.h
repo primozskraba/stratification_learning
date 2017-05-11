@@ -31,7 +31,7 @@ namespace strct {
     private:
         // type aliases
         using Mat = la::Matrix<number>;
-        using vector = typename Mat::vector;
+        using Vec = typename Mat::Vec;
 
     public:
         // inherit all the constructors from matrix
@@ -40,11 +40,11 @@ namespace strct {
         /// applies itself to the space
         Space<number> operator ()(const Space<number>& space) const;
         /// maps the vector
-        vector operator () (const vector&) const;
+        Vec operator () (const Vec&) const;
         
         void decompose(Space<number>& kernel, Space<number>& image) const;
         void apply(const Space<number>&, Space<number>&) const;
-        void apply(const vector&, vector&) const;
+        void apply(const Vec&, Vec&) const;
     };
 
     using BinaryMap = Map<num::binary>;

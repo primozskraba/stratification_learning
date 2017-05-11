@@ -28,7 +28,7 @@ namespace la {
     }
 
     template <typename number>
-    Vector<number>::Vector(const int& dim, const entry& entry):
+    Vector<number>::Vector(const int& dim, const SparseEntry& entry):
             vect(),
             dimension(dim) {
         assert(0 <= entry.first && entry.first < dim);
@@ -105,7 +105,7 @@ namespace la {
     number Vector<number>::operator [](const int& i) const {
         assert(0 <= i && i < dim());
 
-        const auto cmp = [](const entry& el, const int& row_n) { return el.first < row_n; };
+        const auto cmp = [](const SparseEntry& el, const int& row_n) { return el.first < row_n; };
         const auto el_ptr = std::lower_bound(vect.begin(), vect.end(), i, cmp);
 
         if (el_ptr == vect.end() || el_ptr->first != i) { return 0; }
@@ -127,8 +127,8 @@ namespace la {
 
         number result = 0;
         while (idx_a < size_a && idx_b < size_b) {
-            const entry& entry_a = vect_a[idx_a];
-            const entry& entry_b = vect_b[idx_b];
+            const SparseEntry& entry_a = vect_a[idx_a];
+            const SparseEntry& entry_b = vect_b[idx_b];
 
             if (entry_a.first == entry_b.first) {
                 result += entry_a.second * entry_b.second;
@@ -159,8 +159,8 @@ namespace la {
 
         // merge the elements the two vectors have in common
         while (a_idx < vect.size() && b_idx < b.vect.size()) {
-            const entry& entry_a = vect[a_idx];
-            const entry& entry_b = b.vect[b_idx];
+            const SparseEntry& entry_a = vect[a_idx];
+            const SparseEntry& entry_b = b.vect[b_idx];
 
             if (entry_a.first == entry_b.first) {
                 const number sum = entry_a.second + entry_b.second;
@@ -206,8 +206,8 @@ namespace la {
 
         // merge the elements the two vectors have in common
         while (a_idx < vect.size() && b_idx < b.vect.size()) {
-            const entry& entry_a = vect[a_idx];
-            const entry& entry_b = b.vect[b_idx];
+            const SparseEntry& entry_a = vect[a_idx];
+            const SparseEntry& entry_b = b.vect[b_idx];
 
             if (entry_a.first == entry_b.first) {
                 const number sum = entry_a.second + k*entry_b.second;
@@ -253,24 +253,71 @@ namespace la {
     }
 
     ////////////////////////////////////////////
+    /// Matrix Entry
+    template <typename number>
+    constexpr MatrixEntry<number>::MatrixEntry(const number& _val, const tstep& _tm):
+        val(_val),
+        tm(_tm) {}
+
+    template <typename number>
+    constexpr bool operator ==(const MatrixEntry<number>& entry1, const MatrixEntry<number>& entry2) {
+        return entry1.value() == entry2.value() && entry1.time() == entry2.time();
+    }
+
+    template <typename number>
+    constexpr bool operator ==(const MatrixEntry<number>& entry1, const number& entry2) {
+        return entry1.value() == entry2.value() && entry1.time() == 0;
+    }
+
+    template <typename number>
+    constexpr bool operator ==(const number& entry1, const MatrixEntry<number>& entry2) {
+        return entry2 == entry1;
+    }
+
+    template <typename number>
+    constexpr bool operator ==(const int& entry1, const MatrixEntry<number>& entry2) {
+        return entry2 == number(entry1);
+    }
+
+    template <typename number>
+    std::ostream& operator <<(std::ostream& os, const MatrixEntry<number>& entry) {
+        os << entry.value();
+        if (entry.value() != 0) {
+            os << entry.time();
+        }
+        return os;
+    }
+
+
+    ////////////////////////////////////////////
     /// Sparse matrix
     template <typename number>
-    Matrix<number>::Matrix(const int& _row_dim, const int& col_dim):
-            row_dim(_row_dim),
-            mat(col_dim, vector(_row_dim)) {}
+    Matrix<number>::Matrix(const int& row_dim, const int& col_dim):
+            mat(col_dim, Vec(row_dim)),
+            row_times(row_dim, 0),
+            col_times(col_dim, 0) {}
+
+    template <typename number>
+    Matrix<number>::Matrix(const int& row_dim, const int& col_dim,
+                std::vector<tstep>& _row_times, std::vector<tstep>& _col_times):
+            mat(col_dim, Vec(row_dim)),
+            row_times(row_times),
+            col_times(col_times) {}
 
     template <typename number>
     Matrix<number>::Matrix(std::initializer_list<std::vector<number>> rows):
-            row_dim(rows.size()),
-            mat(rows.size() > 0 ? rows.begin()->size() : 0, vector(rows.size())) {
+            mat(rows.size() > 0 ? rows.begin()->size() : 0, Vec(rows.size())),
+            row_times(rows.size(), 0),
+            col_times(rows.size() > 0 ? rows.begin()->size() : 0, 0) {
 
-        if (row_dim == 0) return;
+        if (rows.size() == 0) return;
 
         for (auto row_ptr = rows.begin(); row_ptr != rows.end(); ++row_ptr) {
             const int row_n = row_ptr - rows.begin();
             const auto& row = *row_ptr;
             for (size_t col_n = 0; col_n < row.size(); col_n++) {
                 const number& value = row[col_n];
+                // set the time or check if it is correct
                 if (value != 0) {
                     mat[col_n].vect.push_back({ row_n, value });
                 }
@@ -279,27 +326,50 @@ namespace la {
     }
 
     template <typename number>
-    template <typename... Vecs>
-    Matrix<number>::Matrix(const vector& b0, Vecs const&... vects):
-            Matrix<number>(vects...) {
+    Matrix<number>::Matrix(std::initializer_list<std::vector<std::pair<number,tstep>>> rows):
+            mat(rows.size() > 0 ? rows.begin()->size() : 0, Vec(rows.size())),
+            row_times(rows.size()),
+            col_times(rows.size() > 0 ? rows.begin()->size() : 0) {
 
-        mat.insert(mat.begin(), b0);
+        if (rows.size() == 0) return;
+
+        row_times[0] = 0;
+        col_times[0] = 0;
+
+        for (auto row_ptr = rows.begin(); row_ptr != rows.end(); ++row_ptr) {
+            const int row_n = row_ptr - rows.begin();
+            const auto& row = *row_ptr;
+            for (size_t col_n = 0; col_n < row.size(); col_n++) {
+                const std::pair<number, tstep>& entry = row[col_n];
+                const number& value = entry.first;
+
+                // set the time or check if it is correct
+                if (value != 0) {
+                    // set and/or check the time
+                    const tstep& time = entry.second;
+                    if (col_times[col_n].isUndefined()) {
+                        // time not yet set
+                        assert(row_times[row_n].isUndefined());
+                        col_times[col_n] = row_times[row_n] + time;
+                    }
+                    assert(col_times[col_n] == row_times[row_n] + time);
+
+                    mat[col_n].vect.push_back({ row_n, value });
+                }
+            }
+        }
     }
 
     template <typename number>
-    Matrix<number>::Matrix(const vector& vec):
-            row_dim(vec.dim()),
-            mat({ vec }) {}
+    template <typename... Vecs>
+    Matrix<number>::Matrix(const Vec& first, Vecs const&... vects):
+        Matrix<number>(sizeof...(vects)+1, first, vects...) {}
 
     template <typename number>
     Matrix<number>::Matrix(const Mat& other):
-        row_dim(other.row_dim),
-        mat(other.mat) {}
-
-    template <typename number>
-    Matrix<number>::Matrix(Mat&& other):
-        row_dim(other.row_dim),
-        mat(std::move(other.mat)) {}
+        mat(other.mat),
+        row_times(other.row_times),
+        col_times(other.col_times) {}
 
     template <typename number>
     Matrix<number>& Matrix<number>::operator =(const Mat& other) {
@@ -310,10 +380,17 @@ namespace la {
     }
 
     template <typename number>
+    Matrix<number>::Matrix(Mat&& other):
+        mat(std::move(other.mat)),
+        row_times(std::move(other.row_times)),
+        col_times(std::move(other.col_times)) {}
+
+    template <typename number>
     Matrix<number>& Matrix<number>::operator =(Mat&& other) {
         if (this != &other) {
-            row_dim = other.row_dim;
             std::swap(mat, other.mat);
+            std::swap(row_times, other.row_times);
+            std::swap(col_times, other.col_times);
         }
         return *this;
     }
@@ -324,29 +401,37 @@ namespace la {
         for (int col_n = 0; col_n < cols(); col_n++) {
             if (mat[col_n] != other.mat[col_n]) { return false; }
         }
-        return true;
+        return row_times == other.row_times && col_times == other.col_times;
     }
 
     template <typename number>
-    number Matrix<number>::operator () (const int& row_n, const int& col_n) const {
-        assert(0 <= col_n && col_n < cols());
-        return mat[col_n][row_n];
+    typename Matrix<number>::Entry Matrix<number>::operator () (const int& rowN, const int& colN) const {
+        assert(0 <= colN && colN < cols());
+        return { mat[colN][rowN], getEntryTime(rowN, colN) };
     }
 
     template <typename number>
-    const typename Matrix<number>::vector& Matrix<number>::operator [](const int& colN) const {
+    tstep Matrix<number>::getEntryTime(const int& rowN, const int& colN) const {
+        assert(0 <= rowN && rowN < rows() && 0 <= colN && colN < cols());
+        assert(col_times[colN].canAddBy(row_times[rowN]));
+        const tstep result = col_times[colN] - row_times[rowN];
+        return result;
+    }
+
+    template <typename number>
+    const typename Matrix<number>::Vec& Matrix<number>::operator [](const int& colN) const {
         assert(0 <= colN && colN < cols());
         return mat[colN];
     }
 
     template <typename number>
     int Matrix<number>::rows() const {
-        return row_dim;
+        return row_times.size();
     }
 
     template <typename number>
     int Matrix<number>::cols() const {
-        return mat.size();
+        return col_times.size();
     }
 
     template <typename number>
@@ -355,15 +440,26 @@ namespace la {
     }
 
     template <typename number>
-    void Matrix<number>::make_identity(const int& dim) {
-        row_dim = dim;
+    void Matrix<number>::resize(const int& rows, const int& cols,
+            std::vector<tstep>& _row_times, std::vector<tstep>& _col_times) {
+        *this = Mat(rows, cols, _row_times, _col_times);
+    }
 
+
+    template <typename number>
+    void Matrix<number>::make_identity(const int& dim) {
         mat.clear();
         mat.reserve(dim);
 
         for (int i = 0; i < dim; i++) {
-            mat.push_back(vector(dim, { i, 1 }));
+            mat.push_back(Vec(dim, { i, 1 }));
         }
+
+        row_times.resize(dim);
+        col_times.resize(dim);
+
+        for (tstep& step : row_times) { step = 0; }
+        for (tstep& step : col_times) { step = 0; }
     }
 
     template <typename number>
@@ -371,9 +467,9 @@ namespace la {
         transposed.resize(cols(), rows());
 
         for (int col_n = 0; col_n < cols(); col_n++) {
-            const std::vector<entry>& col = mat[col_n].vect;
+            const std::vector<SparseEntry>& col = mat[col_n].vect;
             for (size_t entry_n = 0; entry_n < col.size(); entry_n++) {
-                const entry& entry = col[entry_n];
+                const SparseEntry& entry = col[entry_n];
                 transposed.mat[entry.first].vect.push_back({ col_n, entry.second });
             }
         }
@@ -397,7 +493,7 @@ namespace la {
         SparseMatrix& C_cols = C.mat;
 
         for (int col_n = 0; col_n < out_cols; col_n++) {
-            vector& out_col = C_cols[col_n];
+            Vec& out_col = C_cols[col_n];
             for (int row_n = 0; row_n < out_rows; row_n++) {
                 const number val = A_rows[row_n] * B_cols[col_n];
                 if (val != 0) {
@@ -408,7 +504,7 @@ namespace la {
     }
 
     template <typename number>
-    void Matrix<number>::multiply(const vector& vec, vector& result) const {
+    void Matrix<number>::multiply(const Vec& vec, Vec& result) const {
         assert(vec.dim() == cols());
         assert(rows() == result.dim());
 
@@ -418,7 +514,7 @@ namespace la {
         // in this matrix. Use only the vectors with corresponding non-zero
         // entries in 'vec'
         for (size_t entryN = 0; entryN < vec.vect.size(); entryN++) {
-            const entry& entry = vec.vect[entryN];
+            const SparseEntry& entry = vec.vect[entryN];
             result.add_multiple(this->operator[](entry.first), entry.second);
         }
     }
@@ -440,7 +536,6 @@ namespace la {
         const int col_dim = cols();
         // copy the rows of this matrix into the image and perform gaussian elimination
         image = *this;
-        kernel.resize(col_dim, 0);
 
         Mat op_follower;    op_follower.make_identity(col_dim);
 
@@ -453,7 +548,7 @@ namespace la {
         SparseMatrix& im = image.mat;
         int kernel_cols = 0;
         for (int colN = 0; colN < col_dim; colN++) {
-            vector& curr_col = im[colN];
+            Vec& curr_col = im[colN];
             bool change = true;
 
             while (!curr_col.is_zero() && change) {
@@ -461,7 +556,7 @@ namespace la {
                 const int pivot_dim = curr_col.pivot_dim();
 
                 for (int eliminatorN = colN-1; eliminatorN >= 0; eliminatorN--) {
-                    const vector& eliminator = im[eliminatorN];
+                    const Vec& eliminator = im[eliminatorN];
                     if (eliminator.pivot_dim() == pivot_dim) {
                         const number pivot_inv = eliminator.pivot().inverse();
                         curr_col.add_multiple(eliminator, pivot_inv);
@@ -482,15 +577,41 @@ namespace la {
         int kernel_col = 0;
         for (int colN = 0; colN < col_dim; colN++) {
             if (image[colN].is_zero()) {
-                kernel.mat[kernel_col++] = std::move(op_follower[colN]);
+                kernel.mat[kernel_col] = std::move(op_follower[colN]);
+                kernel.col_times[kernel_col] = image.col_times[kernel_col];
+                ++kernel_col;
             }
         }
+        kernel.row_times = image.col_times;
 
         // remove the zero vectors from the image
-        const static auto is_zero_pred = [](const vector& vec) { return vec.is_zero(); };
-        const auto last = std::remove_if(im.begin(), im.end(), is_zero_pred);
+        // first do the column times
+        int vecN = 0;
+        const auto last_times = std::remove_if(image.col_times.begin(), image.col_times.end(),
+                [&](const tstep&) { return im[vecN++].is_zero(); });
+        const auto last = std::remove_if(im.begin(), im.end(),
+                [](const Vec& vec) { return vec.is_zero(); });
+
+        image.col_times.erase(last_times, image.col_times.end());
         im.erase(last, im.end());
     }
+
+    template <typename number>
+    template <typename... Vecs>
+    Matrix<number>::Matrix(const int& vec_count, const Vec& vec, Vecs const&... vects):
+            Mat(vec_count, vects...) {
+
+        mat[vec_count - 1 - sizeof...(vects)] = std::move(vec);
+    }
+
+    template <typename number>
+    Matrix<number>::Matrix(const int& total_vecs, const Vec& vec):
+            mat(total_vecs, Vec(vec.dim())),
+            row_times(vec.dim(), 0),
+            col_times(total_vecs, 0) {
+        mat.back() = std::move(vec);
+    }
+
 
     template <typename number>
     void multiply(const Matrix<number>& A, const Matrix<number>& B, Matrix<number>& C) {
@@ -520,7 +641,7 @@ namespace la {
         const int cols = mat.cols();
         for (int row_n = 0; row_n < rows; row_n++) {
             for (int col_n = 0; col_n < cols; col_n++) {
-                const number val = mat(row_n, col_n);
+                const MatrixEntry<number> val = mat(row_n, col_n);
                 os << val;
                 if (col_n < cols-1) { os << ", "; }
             }

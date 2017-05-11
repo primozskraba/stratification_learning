@@ -86,8 +86,6 @@ TEST(Map, decompose) {
     TernarySpace kernel_big, image_big;
     map_big.decompose(kernel_big, image_big);
 
-    std::cout << kernel_big << "\n";
-
     ASSERT_EQ(kernel_big_dim, kernel_big.vector_count());
     ASSERT_EQ(image_big_dim, image_big.vector_count());
 
