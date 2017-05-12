@@ -12,8 +12,8 @@ namespace strct {
     }
 
     template <typename number>
-    typename Map<number>::vector Map<number>::operator ()(const vector& vec) const {
-        vector result(Mat::rows());  apply(vec, result);
+    typename Map<number>::Vec Map<number>::operator ()(const Vec& vec) const {
+        Vec result(Mat::rows());  apply(vec, result);
         return result;
     }
 
@@ -28,7 +28,7 @@ namespace strct {
     }
 
     template <typename number>
-    void Map<number>::apply(const vector& vec, vector& result) const {
+    void Map<number>::apply(const Vec& vec, Vec& result) const {
         multiply(*this, vec, result);
     }
 }

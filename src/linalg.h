@@ -6,10 +6,12 @@
 #include <iostream>
 
 #include "num.h"
+#include "tstep.h"
 
 namespace la {
 
     using namespace num;
+    using namespace ts;
 
     // forward declarations
     template <typename number> class Matrix;
@@ -20,9 +22,10 @@ namespace la {
     class Vector {
         friend class Matrix<number>;
     private:
-        using entry = std::pair<int,number>;
-        using vector = std::vector<entry>;
+        using SparseEntry = std::pair<int,number>;
         using Vec = Vector<number>;
+
+        using vector = std::vector<SparseEntry>;
 
         vector vect;
         int dimension;
@@ -31,7 +34,7 @@ namespace la {
 
         Vector(std::initializer_list<number>);
         /// constructs a vector with a single non-zero entry
-        Vector(const int& dim, const entry&);
+        Vector(const int& dim, const SparseEntry&);
 
         // COPY/MOVE operations
         // copy
@@ -80,30 +83,71 @@ namespace la {
 
 
     ////////////////////////////////////////////
+    /// Single entry returned from a matrix
+    template <typename number>
+    class MatrixEntry {
+    private:
+        number val;
+        tstep tm;
+    public:
+        constexpr MatrixEntry(const number& value, const tstep& time=0);
+
+        constexpr const number& value() const { return val; }
+        constexpr const tstep& time() const { return tm; }
+    };
+
+    // equality operator
+    template <typename number>
+    constexpr bool operator ==(const MatrixEntry<number>&, const MatrixEntry<number>&);
+    // equality operator, assumes the time of the second operand is 0
+    template <typename number>
+    constexpr bool operator ==(const MatrixEntry<number>&, const number&);
+    // equality operator, assumes the time of the first operand is 0
+    template <typename number>
+    constexpr bool operator ==(const number&, const MatrixEntry<number>&);
+    template <typename number>
+    constexpr bool operator ==(const int&, const MatrixEntry<number>&);
+
+    // write to stream operator
+    template <typename number>
+    std::ostream& operator <<(std::ostream&, const MatrixEntry<number>&);
+
+
+    ////////////////////////////////////////////
     /// Sparse matrix implementation
     template <typename number>
     class Matrix {
     private:
         // type aliases
-        using vector = Vector<number>;
-        using entry = typename vector::entry;
-
-        using SparseMatrix = std::vector<vector>;
+        using Vec = Vector<number>;
         using Mat = Matrix<number>;
+        using Entry = MatrixEntry<number>;
 
-        int row_dim;
+        using SparseEntry = typename Vec::SparseEntry;
+        using SparseMatrix = std::vector<Vec>;
+
         SparseMatrix mat;     // stores the column vectors
+        std::vector<tstep> row_times;
+        std::vector<tstep> col_times;
 
     public:
         /// constructs an empty matrix with the given number of rows and columns
+        /// all the rows and columns are given time 0
         explicit Matrix(const int& rows=0, const int& cols=0);
+        /// constructs an empty matrix with the given number of rows and columns
+        /// also sets the row and col times
+        explicit Matrix(const int& rows, const int& cols,
+                std::vector<tstep>& row_times, std::vector<tstep>& col_times);
+
         /// constructs a matrix from a list of (dense) row vectors
+        /// all times are assumed to be 0
         Matrix(std::initializer_list<std::vector<number>>);
+        /// constructs a matrix from a list of (dense) row vectors, where each entry also specifies
+        /// the difference between the column and row times
+        /// the first row and column are assumed to have time 0
+        Matrix(std::initializer_list<std::vector<std::pair<number,tstep>>>);
         /// constructs a matrix from a list of column vectors
-        template <typename... Vecs>
-        Matrix(const vector&, Vecs const&...);
-        /// constructs a matrix from a single column vector
-        Matrix(const vector&);
+        template <typename... Vecs> Matrix(const Vec&, Vecs const&...);
 
         // COPY/MOVE operations
         // copy
@@ -121,9 +165,11 @@ namespace la {
         // ELEMENT ACCESS
 
         /// access element at position row_n, col_n
-        number operator ()(const int& rowN, const int& colN) const;
+        Entry operator ()(const int& rowN, const int& colN) const;
+        /// returns the time associated with the (rowN,colN)-th entry
+        tstep getEntryTime(const int& rowN, const int& colN) const;
         /// access the k-th column vector
-        const vector& operator [](const int& colN) const;
+        const Vec& operator [](const int& colN) const;  // TODO do we want this???
 
         // PROPERTIES
 
@@ -138,7 +184,8 @@ namespace la {
 
         /// changes the dimensions of the matrix, clears the matrix in the process
         void resize(const int& rows, const int& cols);
-        /// reshapes the matrix and puts ones on the diagonal
+        void resize(const int& rows, const int& cols, std::vector<tstep>& row_times, std::vector<tstep>& col_times);
+        /// reshapes the matrix and puts ones on the diagonal, sets all times to 0
         void make_identity(const int& dim);
 
         // OPERATIONS
@@ -148,10 +195,16 @@ namespace la {
 
         /// mulitplication
         void multiply(const Mat&, Mat&) const;
-        void multiply(const vector&, vector&) const;
+        void multiply(const Vec&, Vec&) const;
 
         /// decompose into the kernel and image
         void decompose(Mat& kernel, Mat& image) const;
+
+    private:
+        // helper constructors
+        template <typename... Vecs>
+        Matrix(const int& vec_count, const Vec&, Vecs const&...);
+        Matrix(const int& vec_count, const Vec&);
     };
 
     template <typename number>
