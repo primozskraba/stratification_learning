@@ -40,6 +40,9 @@ add_library(num_lib ../src/num.cpp)
 add_library(linalg_lib ../src/linalg.cpp)
 add_library(struct_lib ../src/struct.cpp)
 
+add_library(topology_lib ../src/topology.cpp)
+
+
 ##############
 # Unit Tests
 ##############
