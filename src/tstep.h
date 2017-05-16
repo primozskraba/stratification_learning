@@ -40,6 +40,8 @@ namespace ts {
         constexpr bool canAddTo(const tstep&) const;
     };
 
+    constexpr bool operator ==(const int&, const tstep&);
+
     std::ostream& operator <<(std::ostream& os, const tstep& ts);
 }
 

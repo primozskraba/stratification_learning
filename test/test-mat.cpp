@@ -33,17 +33,112 @@ TEST(Matrix, initializer_list) {
         { 1, 2, 3 }
     };
 
-    ASSERT_EQ(MatrixEntry<ternary>({1,1}), A(0,0));
-    ASSERT_EQ(MatrixEntry<ternary>({-1,2}), A(0,1));
-    ASSERT_EQ(0, A(0,2));
+    ASSERT_EQ(MatrixEntry<ternary>({1,1}),   A(0,0));
+    ASSERT_EQ(MatrixEntry<ternary>({-1,2}),  A(0,1));
+    ASSERT_EQ(0,                             A(0,2));
 
-    ASSERT_EQ(MatrixEntry<ternary>({-1,-2}), A(1,0));
-    ASSERT_EQ(0, A(1,1));
-    ASSERT_EQ(MatrixEntry<ternary>({1,1}), A(1,2));
+    ASSERT_EQ(MatrixEntry<ternary>({-1,-1}), A(1,0));
+    ASSERT_EQ(0,                             A(1,1));
+    ASSERT_EQ(MatrixEntry<ternary>({1,1}),   A(1,2));
 
-    ASSERT_EQ(0, A(2,0));
-    ASSERT_EQ(MatrixEntry<ternary>({1,-2}), A(2,1));
+    ASSERT_EQ(0,                             A(2,0));
+    ASSERT_EQ(MatrixEntry<ternary>({1,-2}),  A(2,1));
     ASSERT_EQ(MatrixEntry<ternary>({-1,-1}), A(2,2));
+
+    // test if an exception is throws if an incorrect number of row or column times is specified
+#ifndef NDEBUG
+    EXPECT_DEATH(
+        TernaryMatrix C(
+            {
+                { 2, 1, 0 },
+                { 0, 2, 1 }
+            },
+            { 2, 1 },
+            { 1, 3, 8 }
+        );,
+        ""
+    );
+#endif
+#ifndef NDEBUG
+    EXPECT_DEATH(
+        TernaryMatrix C(
+            {
+                { 2, 1, 0 },
+                { 0, 2, 1 }
+            },
+            { 2, 3 },
+            { 1, 3, 2 }
+        );,
+        ""
+    );
+#endif
+#ifndef NDEBUG
+    EXPECT_DEATH(
+        TernaryMatrix C(
+            {
+                { 2, 1, 0 },
+                { 0, 2, 1 }
+            },
+            { 2, 4, 6 },
+            { 1, 3, 8 }
+        );,
+        ""
+    );
+#endif
+#ifndef NDEBUG
+    EXPECT_DEATH(
+        TernaryMatrix D(
+            {
+                { 2, 1, 0 },
+                { 0, 2, 1 }
+            },
+            { 2, 4 },
+            { 1, 3, 8, 10 }
+        );,
+        ""
+    );
+#endif
+}
+
+
+TEST(Matrix, equality) {
+    TernaryMatrix A {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, 1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+    TernaryMatrix B {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, -1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+    TernaryMatrix C {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, 1, -1 }
+        },
+        { 0, 2, 3 },
+        { 1, 2, 3 }
+    };
+
+    ASSERT_EQ(A, A);
+    ASSERT_NE(A, B);
+    ASSERT_NE(A, C);
+    ASSERT_NE(B, C);
+
+    ASSERT_EQ(A(1,1), B(1,1));
+    ASSERT_EQ(A(1,1), C(1,1));
+    ASSERT_NE(A(2,1), B(2,1));
+    ASSERT_NE(A(2,1), C(2,1));
 }
 
 TEST(Matrix, vector_constructor) {
@@ -60,53 +155,37 @@ TEST(Matrix, vector_constructor) {
     ASSERT_EQ(1, A(2,1));
 }
 
-TEST(Matrix, transpose) {
-    TernaryMatrix A = {
-        {2, 1, 0},
-        {0, 2, 1},
-        {1, 1, 1}
-    };
-    BinaryMatrix B = {
-        {1, 1, 0, 0, 0, 0},
-        {0, 0, 1, 1, 1, 1}
+TEST(Matrix, resize) {
+    BinaryMatrix A = {
+        {1, 1, 1, 1},
+        {1, 1, 1, 1}
     };
 
-    TernaryMatrix At = transpose(A);
-    BinaryMatrix Bt = transpose(B);
+    A.resize(6,1);
 
-    ASSERT_EQ(A(0,0), At(0,0));
-    ASSERT_EQ(A(0,1), At(1,0));
-    ASSERT_EQ(A(0,2), At(2,0));
+    ASSERT_EQ(6, A.rows());
+    ASSERT_EQ(1, A.cols());
 
-    ASSERT_EQ(A(1,0), At(0,1));
-    ASSERT_EQ(A(1,1), At(1,1));
-    ASSERT_EQ(A(1,2), At(2,1));
 
-    ASSERT_EQ(A(2,0), At(0,2));
-    ASSERT_EQ(A(2,1), At(1,2));
-    ASSERT_EQ(A(2,2), At(2,2));
+    // test with time (the times should be set to 0)
+    BinaryMatrix B {
+        {
+            {1, 1, 1, 1},
+            {1, 2, 1, 0}
+        },
+        { 1, 2 },
+        { 3, 4, 5, 6 }
+    };
 
-    ASSERT_EQ(3, At.rows());
-    ASSERT_EQ(3, At.cols());
+    B.resize(3, 2);
 
-    ASSERT_EQ(6, Bt.rows());
-    ASSERT_EQ(2, Bt.cols());
-
-    ASSERT_EQ(B(0,0), Bt(0,0));
-    ASSERT_EQ(B(0,1), Bt(1,0));
-    ASSERT_EQ(B(0,2), Bt(2,0));
-    ASSERT_EQ(B(0,3), Bt(3,0));
-    ASSERT_EQ(B(0,4), Bt(4,0));
-    ASSERT_EQ(B(0,5), Bt(5,0));
-
-    ASSERT_EQ(B(1,0), Bt(0,1));
-    ASSERT_EQ(B(1,1), Bt(1,1));
-    ASSERT_EQ(B(1,2), Bt(2,1));
-    ASSERT_EQ(B(1,3), Bt(3,1));
-    ASSERT_EQ(B(1,4), Bt(4,1));
-    ASSERT_EQ(B(1,5), Bt(5,1));
-
-    // TODO test for time matrices
+    ASSERT_EQ(3, B.rows());
+    ASSERT_EQ(2, B.cols());
+    for (int rowN = 0; rowN < 3; rowN++) {
+        for (int colN = 0; colN < 2; colN++) {
+            ASSERT_EQ(0, B.getEntryTime(rowN, colN));
+        }
+    }
 }
 
 TEST(Matrix, multiply) {
@@ -165,3 +244,6 @@ TEST(Matrix, multiply) {
 
     // TODO test for time matrices
 }
+
+
+// TODO add tests for TimeVector and VectorWrapper

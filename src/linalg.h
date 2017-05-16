@@ -101,6 +101,8 @@ namespace la {
     // equality operator
     template <typename number>
     constexpr bool operator ==(const MatrixEntry<number>&, const MatrixEntry<number>&);
+    template <typename number>
+    constexpr bool operator !=(const MatrixEntry<number>&, const MatrixEntry<number>&);
     // equality operator, assumes the time of the second operand is 0
     template <typename number>
     constexpr bool operator ==(const MatrixEntry<number>&, const number&);
@@ -117,6 +119,12 @@ namespace la {
     // write to stream operator
     template <typename number>
     std::ostream& operator <<(std::ostream&, const MatrixEntry<number>&);
+
+    // type definitions
+    using BinaryEntry = MatrixEntry<binary>;
+    using TernaryEntry = MatrixEntry<ternary>;
+
+
 
     //=======================================================
     // TIME VECTOR
@@ -163,6 +171,9 @@ namespace la {
     using TernaryVectorWrapper = VectorWrapper<ternary>;
 
 
+    ////////////////////////////////////////////
+    /// A vector which also encodes the time step
+    /// of each of its siplices.
     template <typename number>
     class TimeVector : public IVector<number> {
     private:
@@ -174,6 +185,7 @@ namespace la {
     public:
         TimeVector(const int& dim);
         TimeVector(const Vec&, const std::vector<tstep>&, const tstep&);
+        // TODO add constructor to convert a VectorWrapper to TimeVector
 
         /// overrides the vector to contain only zeros
         void makeZero();
@@ -181,6 +193,11 @@ namespace la {
         const Vec& getVector() const { return vec; }
         Vec& getVector() { return vec; }
     };
+
+
+
+
+
 
     //=======================================================
     // MATRIX
@@ -213,7 +230,7 @@ namespace la {
         /// constructs an empty matrix with the given number of rows and columns
         /// also sets the row and col times
         explicit Matrix(const int& rows, const int& cols,
-                std::vector<tstep>& row_times, std::vector<tstep>& col_times);
+                const std::vector<tstep>& row_times, const std::vector<tstep>& col_times);
 
         /// constructs a matrix from a list of (dense) row vectors
         /// all times are assumed to be 0
@@ -238,6 +255,7 @@ namespace la {
 
         /// equality operator
         bool operator ==(const Mat&) const;
+        bool operator !=(const Mat&) const;
 
         // ELEMENT ACCESS
 
@@ -261,14 +279,12 @@ namespace la {
 
         /// changes the dimensions of the matrix, clears the matrix in the process
         void resize(const int& rows, const int& cols);
-        void resize(const int& rows, const int& cols, std::vector<tstep>& row_times, std::vector<tstep>& col_times);
+        void resize(const int& rows, const int& cols,
+               const std::vector<tstep>& row_times, const std::vector<tstep>& col_times);
         /// reshapes the matrix and puts ones on the diagonal, sets all times to 0
         void make_identity(const int& dim);
 
         // OPERATIONS
-
-        /// transpose
-        void transpose(Mat&) const;
 
         /// mulitplication
         void multiply(const Mat&, Mat&) const;
@@ -282,10 +298,9 @@ namespace la {
         template <typename... Vecs>
         Matrix(const int& vec_count, const Vec&, Vecs const&...);
         Matrix(const int& vec_count, const Vec&);
-    };
 
-    template <typename number>
-    Matrix<number> transpose(const Matrix<number>&);
+        void transpose(SparseMatrix&) const;
+    };
 
     template <typename number>
     Matrix<number> operator *(const Matrix<number>&, const Matrix<number>&);

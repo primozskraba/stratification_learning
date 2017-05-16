@@ -53,4 +53,8 @@ namespace ts {
     constexpr bool tstep::canAddTo(const tstep& other) const {
         return *this <= other;
     }
+
+    constexpr bool operator ==(const int& val, const tstep& ts) {
+        return ts == val;
+    }
 }
