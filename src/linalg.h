@@ -151,7 +151,7 @@ namespace la {
 
 
     ////////////////////////////////////////////
-    /// A wrapper for a vector, holds a reference to 
+    /// A wrapper for a vector, holds a reference to
     /// the vector itself and the entry times
     template <typename number>
     class VectorWrapper : public IVector<number> {

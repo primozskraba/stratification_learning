@@ -206,7 +206,7 @@ TEST(Matrix, move) {
 TEST(Matrix, vector_constructor) {
     BinaryVector b0 = { 1, 0, 1 };
     BinaryVector b1 = { 0, 1, 1 };
-    
+
     BinaryMatrix A { b0, b1 };
 
     ASSERT_EQ(1, A(0,0));
@@ -269,7 +269,7 @@ TEST(Matrix, multiply) {
         { 2, 2, 1, 0, 2, 2 },
         { 2, 2, 0, 0, 0, 0 }
     };
-	TernaryMatrix AB_expected = {
+    TernaryMatrix AB_expected = {
         { 1, 1, 1, 1, 0, 2 },
         { 2, 0, 1, 1, 0, 2 },
         { 0, 0, 1, 0, 1, 2 }
@@ -309,3 +309,5 @@ TEST(Matrix, multiply) {
 
 
 // TODO add tests for TimeVector and VectorWrapper
+//  - multiplication
+//  - comparison
