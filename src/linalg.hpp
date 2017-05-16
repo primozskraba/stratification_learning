@@ -264,22 +264,37 @@ namespace la {
 
     template <typename number>
     constexpr bool operator ==(const MatrixEntry<number>& entry1, const MatrixEntry<number>& entry2) {
-        return entry1.value() == entry2.value() && entry1.time() == entry2.time();
+        return entry1.value() == entry2.value() &&
+               entry2.time() == entry2.time();
     }
 
     template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>& entry1, const number& entry2) {
-        return entry1.value() == entry2.value() && entry1.time() == 0;
+    constexpr bool operator ==(const MatrixEntry<number>& entry, const number& num) {
+        return entry.value() == num &&
+               (
+                   num == 0 ||
+                   entry.time() == 0
+               );
     }
 
     template <typename number>
-    constexpr bool operator ==(const number& entry1, const MatrixEntry<number>& entry2) {
-        return entry2 == entry1;
+    constexpr bool operator ==(const MatrixEntry<number>& entry, const std::pair<number,tstep>& pr) {
+        return entry.value() == pr.first && entry.time() == pr.second;
     }
 
     template <typename number>
-    constexpr bool operator ==(const int& entry1, const MatrixEntry<number>& entry2) {
-        return entry2 == number(entry1);
+    constexpr bool operator ==(const number& num, const MatrixEntry<number>& entry) {
+        return entry == num;
+    }
+
+    template <typename number>
+    constexpr bool operator ==(const int& num, const MatrixEntry<number>& entry) {
+        return entry == number(num);
+    }
+
+    template <typename number>
+    constexpr bool operator ==(const std::pair<number,tstep>& pr, const MatrixEntry<number>& entry) {
+        return entry == pr;
     }
 
     template <typename number>

@@ -22,6 +22,28 @@ TEST(Matrix, initializer_list) {
     ASSERT_EQ(0, I(2,0));
     ASSERT_EQ(0, I(2,1));
     ASSERT_EQ(1, I(2,2));
+
+    TernaryMatrix A {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, 1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+
+    ASSERT_EQ(MatrixEntry<ternary>({1,1}), A(0,0));
+    ASSERT_EQ(MatrixEntry<ternary>({-1,2}), A(0,1));
+    ASSERT_EQ(0, A(0,2));
+
+    ASSERT_EQ(MatrixEntry<ternary>({-1,-2}), A(1,0));
+    ASSERT_EQ(0, A(1,1));
+    ASSERT_EQ(MatrixEntry<ternary>({1,1}), A(1,2));
+
+    ASSERT_EQ(0, A(2,0));
+    ASSERT_EQ(MatrixEntry<ternary>({1,-2}), A(2,1));
+    ASSERT_EQ(MatrixEntry<ternary>({-1,-1}), A(2,2));
 }
 
 TEST(Matrix, vector_constructor) {
@@ -83,6 +105,8 @@ TEST(Matrix, transpose) {
     ASSERT_EQ(B(1,3), Bt(3,1));
     ASSERT_EQ(B(1,4), Bt(4,1));
     ASSERT_EQ(B(1,5), Bt(5,1));
+
+    // TODO test for time matrices
 }
 
 TEST(Matrix, multiply) {
@@ -138,4 +162,6 @@ TEST(Matrix, multiply) {
 
     ASSERT_EQ(3, AB.rows());
     ASSERT_EQ(6, AB.cols());
+
+    // TODO test for time matrices
 }

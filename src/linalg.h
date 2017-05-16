@@ -104,11 +104,15 @@ namespace la {
     // equality operator, assumes the time of the second operand is 0
     template <typename number>
     constexpr bool operator ==(const MatrixEntry<number>&, const number&);
+    template <typename number>
+    constexpr bool operator ==(const MatrixEntry<number>&, const std::pair<number,tstep>&);
     // equality operator, assumes the time of the first operand is 0
     template <typename number>
     constexpr bool operator ==(const number&, const MatrixEntry<number>&);
     template <typename number>
     constexpr bool operator ==(const int&, const MatrixEntry<number>&);
+    template <typename number>
+    constexpr bool operator ==(const std::pair<number,tstep>&, const MatrixEntry<number>&);
 
     // write to stream operator
     template <typename number>
@@ -219,6 +223,7 @@ namespace la {
         Matrix(std::initializer_list<std::vector<number>> vals, const std::vector<tstep>& row_times,
                 const std::vector<tstep>& col_times);
         /// constructs a matrix from a list of column vectors
+        /// all times are set to 0
         template <typename... Vecs> Matrix(const Vec&, Vecs const&...);
 
         // COPY/MOVE operations
