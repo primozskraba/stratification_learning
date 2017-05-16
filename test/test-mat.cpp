@@ -141,6 +141,68 @@ TEST(Matrix, equality) {
     ASSERT_NE(A(2,1), C(2,1));
 }
 
+TEST(Matrix, copy) {
+    TernaryMatrix A {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, 1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+    TernaryMatrix B {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, -1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+
+    TernaryMatrix A1 = A;
+    TernaryMatrix A2 = A;
+
+    ASSERT_NE(A, B);
+    ASSERT_EQ(A, A1);
+    ASSERT_EQ(A1, A2);
+}
+
+TEST(Matrix, move) {
+    TernaryMatrix A {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, 1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+    TernaryMatrix B {
+        {
+            { 1, -1, 0 },
+            { -1, 0, 1 },
+            { 0, -1, -1 }
+        },
+        { 0, 2, 4 },
+        { 1, 2, 3 }
+    };
+
+    TernaryMatrix A1 = A;
+    TernaryMatrix A2 = std::move(A);
+
+    ASSERT_NE(A1, B);
+    ASSERT_EQ(A1, A2);
+    ASSERT_NE(A1, A);
+
+    // test constructor
+    TernaryMatrix A3 {std::move(A2)};
+
+    ASSERT_NE(A1, A2);
+    ASSERT_EQ(A1, A3);
+}
+
 TEST(Matrix, vector_constructor) {
     BinaryVector b0 = { 1, 0, 1 };
     BinaryVector b1 = { 0, 1, 1 };
