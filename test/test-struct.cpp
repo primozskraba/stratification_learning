@@ -54,8 +54,8 @@ TEST(Map, decompose) {
     ASSERT_EQ(kernel_small_dim, kernel_small.vector_count());
 
     for (int colN = 0; colN < kernel_small_dim; colN++) {
-        const TernaryVector& kernel_vec = kernel_small[colN];
-        ASSERT_TRUE(map_small(kernel_vec).is_zero());
+        const TernaryVectorWrapper kernel_vec = kernel_small[colN];
+        ASSERT_TRUE(map_small(kernel_vec).isZero());
     }
 
     // TEST 2
@@ -90,7 +90,80 @@ TEST(Map, decompose) {
     ASSERT_EQ(image_big_dim, image_big.vector_count());
 
     for (int colN = 0; colN < kernel_big_dim; colN++) {
-        const TernaryVector& kernel_vec = kernel_big[colN];
-        ASSERT_TRUE(map_big(kernel_vec).is_zero());
+        const TernaryVectorWrapper kernel_vec = kernel_big[colN];
+        ASSERT_TRUE(map_big(kernel_vec).isZero());
+    }
+}
+
+TEST(TimedMap, decompose) {
+    std::vector<tstep> simplex_times = { 0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4 };
+
+    TernaryMap boundry {
+        {
+            { 0, 0,    0,-1,    0, 0,    -1,-1, 0,    0, 0 },
+            { 0, 0,    0, 1,    0,-1,     0, 0, 0,    0, 0 },
+
+            { 0, 0,    0, 0,    0, 1,     1, 0, 0,   -1, 0 },
+            { 0, 0,    0, 0,    0, 0,     0, 0, 1,    0, 0 },
+
+            { 0, 0,    0, 0,    0, 0,     0, 1, 0,    1, 0 },
+            { 0, 0,    0, 0,    0, 0,     0, 0, 1,    0, 0 },
+
+            { 0, 0,    0, 0,    0, 0,     0, 0,-1,    0, 1 },
+            { 0, 0,    0, 0,    0, 0,     0, 0, 0,    0,-1 },
+            { 0, 0,    0, 0,    0, 0,     0, 0, 0,    0, 0 },
+
+            { 0, 0,    0, 0,    0, 0,     0, 0, 0,    0, 1 },
+            { 0, 0,    0, 0,    0, 0,     0, 0, 0,    0, 0 }
+        },
+        simplex_times,
+        simplex_times
+    };
+
+    TernarySpace expected_kernel = {
+        {
+            { 1, 0, 0, 0, 0, 0 },
+            { 0, 1, 0, 0, 0, 0 },
+            { 0, 0, 1, 0, 0, 0 },
+            { 0, 0, 0, 0,-1, 1 },
+            { 0, 0, 0, 1, 0, 0 },
+            { 0, 0, 0, 0,-1, 1 },
+            { 0, 0, 0, 0, 1, 0 },
+            { 0, 0, 0, 0, 0,-1 },
+            { 0, 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0, 1 },
+            { 0, 0, 0, 0, 0, 0 }
+        },
+        simplex_times,
+        { 0, 0, 1, 2, 3, 4 }
+    };
+
+    TernarySpace expected_image = {
+        {
+            {-1, 0,-1, 0, 0 },
+            { 1,-1, 0, 0, 0 },
+            { 0, 1, 0, 0, 0 },
+            { 0, 0, 0, 1, 0 },
+            { 0, 0, 1, 0, 0 },
+            { 0, 0, 0, 1, 0 },
+            { 0, 0, 0,-1, 1 },
+            { 0, 0, 0, 0,-1 },
+            { 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 1 },
+            { 0, 0, 0, 0, 0 }
+        },
+        simplex_times,
+        { 1, 2, 3, 3, 4 }
+    };
+
+    TernarySpace kernel, image;
+    boundry.decompose(kernel, image);
+
+    ASSERT_EQ(expected_kernel, kernel);
+    ASSERT_EQ(expected_image, image);
+
+    for (int colN = 0; colN < expected_kernel.cols(); colN++) {
+        const TernaryVectorWrapper kernel_vec = kernel[colN];
+        ASSERT_TRUE(boundry(kernel_vec).isZero());
     }
 }

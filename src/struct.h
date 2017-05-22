@@ -24,6 +24,11 @@ namespace strct {
     using BinarySpace = Space<num::binary>;
     using TernarySpace = Space<num::ternary>;
 
+    template <typename number>
+    std::ostream& operator <<(std::ostream& os, const Space<number>& space) {
+        return os << static_cast<la::Matrix<number>>(space);
+    }
+
     ////////////////////////////////////////
     /// Map: a map between two spaces
     template <typename number>
@@ -31,7 +36,7 @@ namespace strct {
     private:
         // type aliases
         using Mat = la::Matrix<number>;
-        using Vec = typename Mat::Vec;
+        /* using TimeVector = typename Mat::TimeVector; */
 
     public:
         // inherit all the constructors from matrix
@@ -40,11 +45,11 @@ namespace strct {
         /// applies itself to the space
         Space<number> operator ()(const Space<number>& space) const;
         /// maps the vector
-        Vec operator () (const Vec&) const;
+        la::TimeVector<number> operator () (const la::IVector<number>&) const;
         
         void decompose(Space<number>& kernel, Space<number>& image) const;
         void apply(const Space<number>&, Space<number>&) const;
-        void apply(const Vec&, Vec&) const;
+        void apply(const la::IVector<number>&, la::TimeVector<number>&) const;
     };
 
     using BinaryMap = Map<num::binary>;

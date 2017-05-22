@@ -1,6 +1,6 @@
 namespace ts {
 
-    constexpr tstep::tstep(const uint32_t& _ts) : ts(_ts) {}
+    constexpr tstep::tstep(const int& _ts) : ts(_ts) {}
 
     constexpr bool tstep::isUndefined() const {
         return ts == std::numeric_limits<decltype(ts)>::max();
@@ -10,7 +10,7 @@ namespace ts {
         return ts == other.ts;
     }
 
-    constexpr bool tstep::operator ==(const uint32_t& other) const {
+    constexpr bool tstep::operator ==(const int& other) const {
         return ts == other;
     }
 
@@ -29,12 +29,13 @@ namespace ts {
     }
 
     constexpr tstep tstep::operator +(const tstep& other) const {
+        assert(!isUndefined() && !other.isUndefined());
         return ts + other.ts;
     }
 
     constexpr tstep tstep::operator -(const tstep& other) const {
-        assert(*this <= other);
-        return ts + other.ts;
+        assert(!isUndefined() && !other.isUndefined());
+        return ts - other.ts;
     }
 
     constexpr bool tstep::canMultiplyBy(const tstep& other) const {
@@ -51,5 +52,9 @@ namespace ts {
 
     constexpr bool tstep::canAddTo(const tstep& other) const {
         return *this <= other;
+    }
+
+    constexpr bool operator ==(const int& val, const tstep& ts) {
+        return ts == val;
     }
 }

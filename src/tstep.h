@@ -10,20 +10,20 @@ namespace ts {
 
     class tstep {
     private:
-        uint32_t ts;
+        int ts;
 
     public:
         /// default constructor (sets to undefined if called without an argument)
-        constexpr tstep(const uint32_t& ts=std::numeric_limits<decltype(ts)>::max());
+        constexpr tstep(const int& ts=std::numeric_limits<decltype(ts)>::max());
 
-        constexpr uint32_t step() const { return ts; }
+        constexpr int step() const { return ts; }
 
         constexpr bool isUndefined() const;
 
 
         /// comparison operator
         constexpr bool operator ==(const tstep&) const;
-        constexpr bool operator ==(const uint32_t&) const;
+        constexpr bool operator ==(const int&) const;
         constexpr bool operator !=(const tstep&) const;
         constexpr bool operator <(const tstep&) const;
         constexpr bool operator <=(const tstep&) const;
@@ -39,6 +39,8 @@ namespace ts {
         constexpr bool canMultiplyTo(const tstep&) const;
         constexpr bool canAddTo(const tstep&) const;
     };
+
+    constexpr bool operator ==(const int&, const tstep&);
 
     std::ostream& operator <<(std::ostream& os, const tstep& ts);
 }
