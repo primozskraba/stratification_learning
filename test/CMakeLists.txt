@@ -29,6 +29,7 @@ file(GLOB SRC_FILES ../src/*.cpp)
 # LIBRARIES
 add_library(libraryCode ${SRC_FILES})
 
+
 # EXECUTABLES
 add_executable(runUnitTests tests.cpp ${TEST_FILES})
 
