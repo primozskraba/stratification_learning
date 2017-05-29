@@ -47,6 +47,8 @@ namespace la {
         bool operator ==(const Vec&) const;
         bool operator !=(const Vec&) const;
 
+        /// resizes the vector
+        void resize(const int& dim);
         /// makes the vector [0,0,...,0]
         void makeZero();
         /// returns true if this is a zero vector
@@ -54,7 +56,7 @@ namespace la {
 
         int dim() const { return dimension; }
         /// returns the index of the highest non-zero dimension
-        int pivot_dim() const;
+        int pivotDim() const;
         /// returns the entry in the last non-zero dimension (assumes such an element exists)
         number pivot() const;
 
@@ -139,14 +141,20 @@ namespace la {
         using Vec = Vector<number>;
 
     public:
+        virtual ~IVector() {}
+
+        /// get element
+        MatrixEntry<number> operator [](const int&) const;
+        tstep getTime(const int&) const;
+
         /// returns the vectors dimension
         int dim() const { return getVector().dim(); }
         /// returns true if the vector contains only zeros
         bool isZero() const { return getVector().isZero(); }
 
-        virtual ~IVector() {}
-
         virtual const Vec& getVector() const = 0;
+        virtual const std::vector<tstep>& getSimplexTimes() const = 0;
+        virtual const tstep& getTimeStep() const = 0;
     };
 
 
@@ -159,12 +167,14 @@ namespace la {
         using Vec = typename IVector<number>::Vec;
 
         const Vec& vec;
-        const std::vector<tstep>& entry_steps;
-        const tstep& vector_step;
+        const std::vector<tstep>& simplex_times;
+        const tstep& vector_time;
     public:
         VectorWrapper(const Vec&, const std::vector<tstep>&, const tstep&);
 
         const Vec& getVector() const { return vec; }
+        const std::vector<tstep>& getSimplexTimes() const { return simplex_times; }
+        const tstep& getTimeStep() const { return vector_time; }
     };
 
     using BinaryVectorWrapper = VectorWrapper<binary>;
@@ -180,21 +190,32 @@ namespace la {
         using Vec = typename IVector<number>::Vec;
 
         Vec vec;
-        std::vector<tstep> entry_steps;
-        tstep vector_step;
+        std::vector<tstep> simplex_times;
+        tstep vector_time;
     public:
         TimeVector(const int& dim);
         TimeVector(const Vec&, const std::vector<tstep>&, const tstep&);
         // TODO add constructor to convert a VectorWrapper to TimeVector
 
+        /// resizes the vector and sets the time steps
+        void resize(const int& dim, const std::vector<tstep>&, const tstep&);
         /// overrides the vector to contain only zeros
         void makeZero();
 
         const Vec& getVector() const { return vec; }
         Vec& getVector() { return vec; }
+
+        const std::vector<tstep>& getSimplexTimes() const { return simplex_times; }
+        const tstep& getTimeStep() const { return vector_time; }
     };
 
+    using BinaryTimeVector = TimeVector<binary>;
+    using TernaryTimeVector = TimeVector<ternary>;
 
+
+    /// vector comparison
+    template <typename number>
+    bool operator ==(const IVector<number>&, const IVector<number>&);
 
 
 
@@ -274,6 +295,10 @@ namespace la {
         int cols() const;
         /// check if the matrix has any elements
         int empty() const { return rows() == 0 || cols() == 0; }
+        /// checks if the matrix is in Echelon form as explained in Linear Algebra and its Applications by Gilbert Strang (Chapter 2)
+        bool isEchelonForm() const;
+        /// checks if the matrix is in row reduced form as explained in Linear Algebra and its Applications by Gilbert Strang (Chapter 2)
+        // TODO bool isRowReducedForm() const;
 
         // RESHAPING
 
@@ -293,6 +318,9 @@ namespace la {
         /// decompose into the kernel and image
         void decompose(Mat& kernel, Mat& image) const;
 
+        /// solves the system A*X = B
+        void solve(const Mat& B, Mat& X) const;
+
     private:
         // helper constructors
         template <typename... Vecs>
@@ -306,14 +334,23 @@ namespace la {
     Matrix<number> operator *(const Matrix<number>&, const Matrix<number>&);
 
     template <typename number>
+    TimeVector<number> operator *(const Matrix<number>&, const IVector<number>&);
+
+    template <typename number>
     void multiply(const Matrix<number>&, const Matrix<number>&, Matrix<number>&);
 
     template <typename number>
     void multiply(const Matrix<number>&, const IVector<number>&, TimeVector<number>&);
 
+    /// solves the system A*X = B
+    template <typename number>
+    void solve(const Matrix<number>& A, Matrix<number>& X, const Matrix<number>& B);
+
     // I/O
     template <typename number>
     std::ostream& operator <<(std::ostream&, const Vector<number>&);
+    template <typename number>
+    std::ostream& operator <<(std::ostream&, const IVector<number>&);
     template <typename number>
     std::ostream& operator <<(std::ostream&, const Matrix<number>&);
 
