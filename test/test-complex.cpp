@@ -10,3 +10,18 @@ TEST(Complex, Initialize_list){
 Complex<int,int> C = { { {0},0  }, {{1},0},{{0,1},1 } };            
 
 }
+
+
+
+TEST(Complex, Insert){
+
+}
+
+TEST(Complex,finalize){
+
+}
+
+
+
+TEST(Complex,Boundary){
+}

@@ -5,6 +5,8 @@
 #include "test-vec.cpp"
 #include "test-struct.cpp"
 #include "test-module.cpp"
+#include "test-simplex.cpp"
+#include "test-complex.cpp"
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

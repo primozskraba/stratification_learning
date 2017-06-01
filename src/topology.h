@@ -8,6 +8,7 @@
 #include <iostream>
 #include <functional>
 
+#include "linalg.h"
 namespace top{
     
     // simplex class - mainly for templating
@@ -26,6 +27,7 @@ namespace top{
         explicit Simplex(const indextype&);
         
         Simplex(std::initializer_list<indextype>);
+        Simplex(std::vector<indextype>);
         
         
         // COPY/MOVE operations
@@ -53,7 +55,7 @@ namespace top{
         Simp erase(const int&) const ;
         void insert(const indextype&);
         
-       	};
+       
 
     };
     
@@ -65,7 +67,7 @@ namespace top{
     	using fvector = std::vector<entry>;
     
         // compare with unordered_map	
-  	std::map<std::reference_wrapper<const simplex> ,int> reverse_map;
+  	std::map<const std::reference_wrapper<simplex> ,int> reverse_map;
 
     	fvector data;
     	int num_simplices;
@@ -112,7 +114,7 @@ namespace top{
 		la::Vector<number> chain(complex_size);
 		if(C[i].dim()>0){
 			for(auto j=0; j<=C[i].dim(); ++j){
-		    	   chain.insert(C.getIndex(C[i].erase(j)), );	
+		    	   //chain.insert(C.getIndex(C[i].erase(j)), );	
 			}
 		}
 		else {

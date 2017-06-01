@@ -31,7 +31,19 @@ namespace top{
 		std::unique(vertex_list.begin(),vertex_list.end());
 	}
 
-	
+	template<typename indextype>
+	Simplex<indextype>::Simplex(std::vector<indextype> vertices):
+		vertex_list() {
+		
+		for(auto v : vertices){
+			vertex_list.push_back(v);
+		}
+		
+		std::sort(vertex_list.begin(),vertex_list.end());
+		std::unique(vertex_list.begin(),vertex_list.end());
+	}
+
+
 	template<typename indextype>
 	Simplex<indextype>::Simplex(const Simp& other):
 		vertex_list(other.vertex_list) {}
@@ -144,18 +156,18 @@ namespace top{
 // change this to 0 but reserve the size
    template<typename time,typename indextype>
    Complex<time,indextype>::Complex(const int& num_simp):
-	 num_simplices(),
-	 data(),
-	 reverse_map(),
-         finalized(false){}	
+	reverse_map(),
+ 	data(),
+ 	num_simplices(),
+	finalized(false){}	
 	 
    
 	
    template<typename time,typename indextype>
 	Complex<time,indextype>::Complex(std::initializer_list<std::pair<std::vector<indextype>,time>> simplices):
-   	num_simplices(),
-	data(),
-	reverse_map(),
+   	reverse_map(),
+ 	data(),
+ 	num_simplices(),
 	finalized(false){
 	    for (auto simp_ptr = simplices.begin(); simp_ptr != simplices.end(); ++simp_ptr) {
 		simplex S;
@@ -192,8 +204,10 @@ namespace top{
 	};
 
 	std::sort(data.begin(),data.end(),filt_order());
+	std::unique(data.begin(),data.end());
 	for(int i=0;i<num_simplices;++i){
-		reverse_map.insert(std::make_pair(data[i],i));
+		reverse_map.insert(std::make_pair(data[i].first,i));
+
 	}
    	finalized=true;
    }
