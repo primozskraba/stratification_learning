@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "util.h"
+#include "except.h"
 
 namespace la {
 
@@ -81,6 +82,11 @@ namespace la {
     }
 
     template <typename number>
+    void Vector<number>::resize(const int& dim) {
+        *this = Vec(dim);
+    }
+
+    template <typename number>
     void Vector<number>::makeZero() {
         vect.clear();
     }
@@ -91,7 +97,7 @@ namespace la {
     }
 
     template <typename number>
-    int Vector<number>::pivot_dim() const {
+    int Vector<number>::pivotDim() const {
         return isZero() ? -1 : vect.back().first;
     }
 
@@ -311,15 +317,27 @@ namespace la {
         return os;
     }
 
+    ////////////////////////////////////////////
+    /// Vector Interface
+    template <typename number>
+    MatrixEntry<number> IVector<number>::operator [](const int& valN) const {
+        const Vector<number>& vec = getVector();
+        return { vec[valN], getTime(valN) };
+    }
+
+    template <typename number>
+    tstep IVector<number>::getTime(const int& valN) const {
+        return getTimeStep() - getSimplexTimes()[valN];
+    }
 
     ////////////////////////////////////////////
     /// Vector wrapper
     template <typename number>
-    VectorWrapper<number>::VectorWrapper(const Vec& _vec, const std::vector<tstep>& _entry_steps,
-            const tstep& _vector_step):
+    VectorWrapper<number>::VectorWrapper(const Vec& _vec, const std::vector<tstep>& _simplex_times,
+            const tstep& _vector_time):
         vec(_vec),
-        entry_steps(_entry_steps),
-        vector_step(_vector_step) {}
+        simplex_times(_simplex_times),
+        vector_time(_vector_time) {}
 
 
     ////////////////////////////////////////////
@@ -327,19 +345,35 @@ namespace la {
     template <typename number>
     TimeVector<number>::TimeVector(const int& dim):
             vec(dim),
-            entry_steps(dim, 0),
-            vector_step(0) {}
+            simplex_times(dim, 0),
+            vector_time(0) {}
 
     template <typename number>
-    TimeVector<number>::TimeVector(const Vec& _vec, const std::vector<tstep>& _entry_steps,
-            const tstep& _vector_step):
+    TimeVector<number>::TimeVector(const Vec& _vec, const std::vector<tstep>& _simplex_times,
+            const tstep& _vector_time):
         vec(_vec),
-        entry_steps(_entry_steps),
-        vector_step(_vector_step) {}
+        simplex_times(_simplex_times),
+        vector_time(_vector_time) {}
+
+    template <typename number>
+    void TimeVector<number>::resize(const int& dim, const std::vector<tstep>& _simplex_times,
+            const tstep& _vector_time) {
+        assert(_simplex_times.size() == size_t(dim));
+        vec.resize(dim);
+        simplex_times = _simplex_times;
+        vector_time = _vector_time;
+    }
 
     template <typename number>
     void TimeVector<number>::makeZero() {
         vec.makeZero();
+    }
+
+    template <typename number>
+    bool operator ==(const IVector<number>& a, const IVector<number>& b) {
+        return a.getVector() == b.getVector() &&
+               a.getSimplexTimes() == b.getSimplexTimes() &&
+               a.getTimeStep() == b.getTimeStep();
     }
 
 
@@ -498,6 +532,21 @@ namespace la {
     }
 
     template <typename number>
+    bool Matrix<number>::isEchelonForm() const {
+        const int col_dim = cols();
+        int curr_pivot_dim = -1;
+        for (int colN = 0; colN < col_dim; colN++) {
+            const int pivot_dim = mat[colN].pivotDim();
+            if (pivot_dim == -1) { continue; }  // zero column
+            if (pivot_dim < curr_pivot_dim) {
+                return false;
+            }
+            curr_pivot_dim = pivot_dim;
+        }
+        return true;
+    }
+
+    template <typename number>
     void Matrix<number>::resize(const int& rows, const int& cols) {
         *this = Mat(rows, cols);
     }
@@ -532,7 +581,7 @@ namespace la {
         const int out_rows = rows();
         const int out_cols = B.cols();
 
-        C.resize(out_rows, out_cols);
+        C.resize(out_rows, out_cols, row_times, B.col_times);
 
         // index this by rows, so it will be easier to multiply
         SparseMatrix A_rows;    transpose(A_rows);
@@ -556,7 +605,7 @@ namespace la {
         assert(vec.dim() == cols());
         assert(rows() == result.dim());
 
-        if (!result.isZero()) { result.makeZero(); }
+        result.resize(rows(), row_times, vec.getTimeStep());
 
         const Vector<number>& internal_vec = vec.getVector();
         Vector<number>& result_vec = result.getVector();
@@ -568,12 +617,6 @@ namespace la {
             const SparseEntry& entry = internal_vec.vect[entryN];
             result_vec.addMultiple(mat[entry.first], entry.second);
         }
-    }
-
-    template <typename number>
-    Matrix<number> operator *(const Matrix<number>& A, const Matrix<number>& B) {
-        Matrix<number> C;   A.multiply(B, C);
-        return C;
     }
 
     template <typename number>
@@ -598,11 +641,11 @@ namespace la {
 
             while (!curr_col.isZero() && change) {
                 change = false;
-                const int pivot_dim = curr_col.pivot_dim();
+                const int pivot_dim = curr_col.pivotDim();
 
                 for (int eliminatorN = colN-1; eliminatorN >= 0; eliminatorN--) {
                     const Vec& eliminator = im[eliminatorN];
-                    if (eliminator.pivot_dim() == pivot_dim) {
+                    if (eliminator.pivotDim() == pivot_dim) {
                         const number pivot_inv = eliminator.pivot().inverse();
                         curr_col.addMultiple(eliminator, pivot_inv);
                         op_follower.mat[colN].addMultiple(op_follower.mat[eliminatorN], pivot_inv);
@@ -642,6 +685,50 @@ namespace la {
     }
 
     template <typename number>
+    void Matrix<number>::solve(const Mat& B, Mat& X) const {
+        assert(isEchelonForm());
+        assert(row_times == B.row_times);
+
+        const int dimA = cols();
+        const int dimB = B.cols();
+
+        X.resize(rows(), B.cols(), row_times, B.col_times);
+
+        for (int vecN = 0; vecN < dimB; vecN++) {
+            // find a linear combination of vectors in A which produce b (i.e. A*alpha = b)
+            // alpha then represents the current column of X
+
+            // copy B's current vector, so you can modify it
+            Vec bvec = B.mat[vecN];
+            typename Vec::vector alpha_rev;   // will hold the tuples that go into alpha in reverse order
+
+            while (!bvec.isZero()) {
+                const int pivot_dim = bvec.pivotDim();
+                const number& pivot = bvec.pivot();
+
+                bool found_elim = false;
+                for (int eliminatorN = 0; eliminatorN < dimA; eliminatorN++) {
+                    const Vec& elim = mat[eliminatorN];
+                    if (elim.pivotDim() == pivot_dim) {
+                        const number factor = pivot * elim.pivot().inverse();
+                        bvec.addMultiple(elim, -factor);
+                        alpha_rev.push_back({ eliminatorN, factor });
+                        found_elim = true;
+                        break;
+                    }
+                }
+
+                if (!found_elim) {
+                    throw except::NotInImageSpaceException("Could not find a combination for the " + std::to_string(vecN) + "-th vector!");
+                }
+            }
+
+            // reverse the vector and put it into X (this implementation relies on move semantics)
+            X.mat[vecN].vect = typename Vec::vector(alpha_rev.rbegin(), alpha_rev.rend());
+        }
+    }
+
+    template <typename number>
     template <typename... Vecs>
     Matrix<number>::Matrix(const int& vec_count, const Vec& vec, Vecs const&... vects):
             Mat(vec_count, vects...) {
@@ -672,6 +759,18 @@ namespace la {
         }
     }
 
+    template <typename number>
+    Matrix<number> operator *(const Matrix<number>& A, const Matrix<number>& B) {
+        Matrix<number> C;   A.multiply(B, C);
+        return C;
+    }
+
+    template <typename number>
+    TimeVector<number> operator *(const Matrix<number>& A, const IVector<number>& b) {
+        TimeVector<number> result(A.rows());
+        multiply(A, b, result);
+        return result;
+    }
 
     template <typename number>
     void multiply(const Matrix<number>& A, const Matrix<number>& B, Matrix<number>& C) {
@@ -684,6 +783,11 @@ namespace la {
     }
 
     template <typename number>
+    void solve(const Matrix<number>& A, Matrix<number>& X, const Matrix<number>& B) {
+        A.solve(B, X);
+    }
+
+    template <typename number>
     std::ostream& operator <<(std::ostream& os, const Vector<number>& vec) {
         const int dim = vec.dim();
         for (int i = 0; i < dim; i++) {
@@ -692,6 +796,30 @@ namespace la {
                 os << ", ";
             }
         }
+        return os;
+    }
+
+    template <typename number>
+    std::ostream& operator <<(std::ostream& os, const TimeVector<number>& vec) {
+        const int dim = vec.dim();
+        os << "[ ";
+        for (int valN = 0; valN < dim; valN++) {
+            os << vec[valN];
+            if (valN < dim-1) { os << ", "; }
+        }
+        os << " ]";
+        return os;
+    }
+
+    template <typename number>
+    std::ostream& operator <<(std::ostream& os, const VectorWrapper<number>& vec) {
+        const int dim = vec.dim();
+        os << "[ ";
+        for (int valN = 0; valN < dim; valN++) {
+            os << vec[valN];
+            if (valN < dim-1) { os << ", "; }
+        }
+        os << " ]";
         return os;
     }
 
