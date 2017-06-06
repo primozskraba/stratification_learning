@@ -355,6 +355,34 @@ TEST(Matrix, multiply) {
     ASSERT_EQ(AtimesB7, A_time * B_time[7]);
 }
 
+TEST(Matrix, reduce) {
+    TernaryMatrix A = {
+        {
+            { 2, 2, 0, 2, 0 },
+            { 1, 0, 2, 0, 2 },
+            { 0, 1, 1, 0, 0 },
+            { 0, 0, 0, 1, 1 }
+        },
+        { 0, 1, 2, 3 },
+        { 0, 2, 2, 3, 3 }
+    };
+
+    TernaryMatrix expected = {
+        {
+            { 2, 2, 0, 2, 0 },
+            { 1, 0, 0, 0, 0 },
+            { 0, 1, 0, 0, 0 },
+            { 0, 0, 0, 1, 0 }
+        },
+        { 0, 1, 2, 3 },
+        { 0, 2, 2, 3, 3 }
+    };
+
+    A.reduce();
+    ASSERT_EQ(expected, A);
+    ASSERT_TRUE(A.isReducedForm());
+}
+
 TEST(Matrix, isReducedForm) {
     TernaryMatrix pos1 = {
         { 2, 2, 0, 0, 0 },
@@ -391,6 +419,12 @@ TEST(Matrix, isReducedForm) {
 
     ASSERT_TRUE(pos2.isReducedForm());
     ASSERT_FALSE(neg2.isReducedForm());
+
+    neg1.reduce();
+    neg2.reduce();
+
+    ASSERT_TRUE(neg1.isReducedForm());
+    ASSERT_TRUE(neg2.isReducedForm());
 }
 
 TEST(Matrix, solve) {
@@ -548,4 +582,3 @@ TEST(Matrix, solve) {
 
 // TODO add tests for IVector
 //  - comparison
-// TODO test for reduce
