@@ -341,7 +341,7 @@ namespace la {
 
 
     ////////////////////////////////////////////
-    /// Vector
+    /// Vector with time
     template <typename number>
     TimeVector<number>::TimeVector(const int& dim):
             vec(dim),
@@ -509,10 +509,20 @@ namespace la {
     }
 
     template <typename number>
+    tstep Matrix<number>::getColTime(const int& colN) const {
+        assert(0 <= colN && colN < cols());
+        return col_times[colN];
+    }
+
+    template <typename number>
+    tstep Matrix<number>::getRowTime(const int& rowN) const {
+        assert(0 <= rowN && rowN < rows());
+        return row_times[rowN];
+    }
+
+    template <typename number>
     tstep Matrix<number>::getEntryTime(const int& rowN, const int& colN) const {
-        assert(0 <= rowN && rowN < rows() && 0 <= colN && colN < cols());
-        const tstep result = col_times[colN] - row_times[rowN];
-        return result;
+        return getColTime(colN) - getRowTime(rowN);
     }
 
     template <typename number>
@@ -532,17 +542,17 @@ namespace la {
     }
 
     template <typename number>
-    bool Matrix<number>::isEchelonForm() const {
+    bool Matrix<number>::isReducedForm() const {
+        std::vector<bool> pivot_rows(rows(), false);
+
         const int col_dim = cols();
-        int curr_pivot_dim = -1;
         for (int colN = 0; colN < col_dim; colN++) {
             const int pivot_dim = mat[colN].pivotDim();
             if (pivot_dim == -1) { continue; }  // zero column
-            if (pivot_dim < curr_pivot_dim) {
-                return false;
-            }
-            curr_pivot_dim = pivot_dim;
+            if (pivot_rows[pivot_dim]) { return false; }
+            pivot_rows[pivot_dim] = true;
         }
+
         return true;
     }
 
@@ -572,6 +582,29 @@ namespace la {
 
         for (tstep& step : row_times) { step = 0; }
         for (tstep& step : col_times) { step = 0; }
+    }
+
+    template <typename number>
+    void Matrix<number>::reduce() {
+        const int col_dim = cols();
+        for (int colN = 0; colN < col_dim; colN++) {
+            Vec& curr_col = mat[colN];
+            bool change = true;
+
+            while (!curr_col.isZero() && change) {
+                change = false;
+                const int pivot_dim = curr_col.pivotDim();
+
+                for (int eliminatorN = colN-1; eliminatorN >= 0; eliminatorN--) {
+                    const Vec& eliminator = mat[eliminatorN];
+                    if (eliminator.pivotDim() == pivot_dim) {
+                        curr_col.addMultiple(eliminator, 1 / eliminator.pivot());
+                        change = true;
+                        break;
+                    }
+                }
+            }
+        }
     }
 
     template <typename number>
@@ -686,13 +719,13 @@ namespace la {
 
     template <typename number>
     void Matrix<number>::solve(const Mat& B, Mat& X) const {
-        assert(isEchelonForm());
+        assert(isReducedForm());
         assert(row_times == B.row_times);
 
         const int dimA = cols();
         const int dimB = B.cols();
 
-        X.resize(rows(), B.cols(), row_times, B.col_times);
+        X.resize(dimA, dimB, col_times, B.col_times);
 
         for (int vecN = 0; vecN < dimB; vecN++) {
             // find a linear combination of vectors in A which produce b (i.e. A*alpha = b)

@@ -355,68 +355,42 @@ TEST(Matrix, multiply) {
     ASSERT_EQ(AtimesB7, A_time * B_time[7]);
 }
 
-TEST(Matrix, isEchelonForm) {
+TEST(Matrix, isReducedForm) {
     TernaryMatrix pos1 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 2, 2, 2 },
-        { 0, 1, 1, 0, 0 },
-        { 0, 0, 0, 1, 1 },
+        { 2, 2, 0, 0, 0 },
+        { 1, 0, 0, 2, 0 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
         { 0, 0, 0, 0, 0 }
     };
     TernaryMatrix neg1 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 2, 2, 2 },
-        { 0, 0, 1, 0, 0 },
-        { 0, 1, 0, 1, 1 },
-        { 0, 0, 0, 0, 0 }
-    };
-
-    ASSERT_TRUE(pos1.isEchelonForm());
-    ASSERT_FALSE(neg1.isEchelonForm());
-
-    TernaryMatrix pos2 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 0, 2, 2 },
-        { 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 1, 1 },
-        { 0, 0, 0, 0, 0 }
-    };
-    TernaryMatrix neg2 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 0, 2, 2 },
+        { 2, 2, 0, 0, 0 },
+        { 1, 0, 0, 2, 0 },
         { 0, 0, 0, 0, 0 },
         { 0, 1, 0, 1, 0 },
         { 0, 0, 0, 0, 0 }
     };
 
-    ASSERT_TRUE(pos2.isEchelonForm());
-    ASSERT_FALSE(neg2.isEchelonForm());
+    ASSERT_TRUE(pos1.isReducedForm());
+    ASSERT_FALSE(neg1.isReducedForm());
 
-    TernaryMatrix pos3 = {
-        {
-            { 2, 2, 0, 0, 1 },
-            { 1, 0, 2, 2, 2 },
-            { 0, 1, 1, 0, 0 },
-            { 0, 0, 0, 1, 1 },
-            { 0, 0, 0, 0, 0 }
-        },
-        { 0, 1, 2, 2, 3 },
-        { 1, 2, 2, 3, 3 }
+    TernaryMatrix pos2 = {
+        { 2, 2, 0, 0, 2 },
+        { 1, 0, 0, 2, 0 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 1 }
     };
-    TernaryMatrix neg3 = {
-        {
-            { 2, 2, 0, 0, 1 },
-            { 1, 0, 2, 2, 2 },
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 0, 1, 1 },
-            { 0, 0, 0, 0, 0 }
-        },
-        { 0, 1, 2, 2, 3 },
-        { 1, 2, 2, 3, 3 }
+    TernaryMatrix neg2 = {
+        { 2, 2, 0, 0, 1 },
+        { 1, 0, 0, 2, 2 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0 }
     };
 
-    ASSERT_TRUE(pos3.isEchelonForm());
-    ASSERT_FALSE(neg3.isEchelonForm());
+    ASSERT_TRUE(pos2.isReducedForm());
+    ASSERT_FALSE(neg2.isReducedForm());
 }
 
 TEST(Matrix, solve) {
@@ -449,12 +423,67 @@ TEST(Matrix, solve) {
         { 0, 1, 1, 2, 2, 2, 3, 3, 4, 4 }
     };
 
+    A_time.reduce();
+
     TernaryMatrix X;    solve(A_time, X, C_time);
     ASSERT_EQ(C_time, A_time * X);
 
     // reusing the same input
     solve(A_time, X, C_time);
     ASSERT_EQ(C_time, A_time * X);
+
+
+    BinaryMatrix G = {
+        {
+            { 1,  0,  0,  0,  0,  0 },
+            { 0,  1,  0,  0,  0,  0 },
+            { 0,  0,  1,  0,  0,  0 },
+            { 0,  0,  0,  1,  0,  0 },
+            { 0,  0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  0,  1 },
+            { 0,  0,  0,  0,  0,  0 },
+            { 0,  0,  0,  0,  0,  0 }
+        },
+        { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 4 },
+        { 0, 0, 1, 1, 4, 4 },
+    };
+
+    BinaryMatrix R = {
+        {
+            { 1,  0,  1,  0,  0 },
+            { 1,  1,  0,  0,  0 },
+            { 0,  1,  0,  0,  0 },
+            { 0,  0,  1,  0,  0 },
+            { 0,  0,  0,  1,  1 },
+            { 0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  0 },
+            { 0,  0,  0,  0,  0 }
+        },
+        { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 4 },
+        { 1, 1, 2, 2, 3 }
+    };
+
+    BinaryMatrix M = {
+        {
+            { 1,  0,  1,  0,  0 },
+            { 1,  1,  0,  0,  0 },
+            { 0,  1,  0,  0,  0 },
+            { 0,  0,  1,  0,  0 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  1,  0 },
+        },
+        { 0, 0, 1, 1, 4, 4 },
+        { 1, 1, 2, 2, 3 }
+    };
+
+    BinaryMatrix M1; solve(G, M1, R);
+    ASSERT_EQ(M, M1);
 
 #ifndef NDEBUG
     TernaryMatrix A_time1 = {
@@ -519,3 +548,4 @@ TEST(Matrix, solve) {
 
 // TODO add tests for IVector
 //  - comparison
+// TODO test for reduce

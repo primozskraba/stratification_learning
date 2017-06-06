@@ -151,6 +151,8 @@ namespace la {
         int dim() const { return getVector().dim(); }
         /// returns true if the vector contains only zeros
         bool isZero() const { return getVector().isZero(); }
+        /// returns the dimension of the pivot
+        int pivotDim() const { return getVector().pivotDim(); }
 
         virtual const Vec& getVector() const = 0;
         virtual const std::vector<tstep>& getSimplexTimes() const = 0;
@@ -282,6 +284,10 @@ namespace la {
 
         /// access element at position row_n, col_n
         Entry operator ()(const int& rowN, const int& colN) const;
+        /// returns the time of the vector
+        tstep getColTime(const int&) const;
+        /// returns the time step of the simplex
+        tstep getRowTime(const int&) const;
         /// returns the time associated with the (rowN,colN)-th entry
         tstep getEntryTime(const int& rowN, const int& colN) const;
         /// access the k-th column vector
@@ -295,10 +301,8 @@ namespace la {
         int cols() const;
         /// check if the matrix has any elements
         int empty() const { return rows() == 0 || cols() == 0; }
-        /// checks if the matrix is in Echelon form as explained in Linear Algebra and its Applications by Gilbert Strang (Chapter 2)
-        bool isEchelonForm() const;
-        /// checks if the matrix is in row reduced form as explained in Linear Algebra and its Applications by Gilbert Strang (Chapter 2)
-        // TODO bool isRowReducedForm() const;
+        /// checks if the columns of the vector are either linearly independent or zero
+        bool isReducedForm() const;
 
         // RESHAPING
 
@@ -310,6 +314,9 @@ namespace la {
         void make_identity(const int& dim);
 
         // OPERATIONS
+
+        /// sets all the linearly dependent vectors to 0
+        void reduce();
 
         /// mulitplication
         void multiply(const Mat&, Mat&) const;

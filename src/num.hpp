@@ -66,6 +66,11 @@ namespace num {
     }
 
     template <int modulo>
+    constexpr number<modulo> operator /(const int& a, const number<modulo>& b) {
+        return a * b.inverse();
+    }
+
+    template <int modulo>
     std::ostream& operator <<(std::ostream& os, const number<modulo>& num) {
         os << num.value();
         return os;
