@@ -218,6 +218,8 @@ namespace la {
     /// vector comparison
     template <typename number>
     bool operator ==(const IVector<number>&, const IVector<number>&);
+    template <typename number>
+    bool operator !=(const IVector<number>&, const IVector<number>&);
 
 
 

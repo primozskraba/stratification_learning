@@ -376,6 +376,11 @@ namespace la {
                a.getTimeStep() == b.getTimeStep();
     }
 
+    template <typename number>
+    bool operator !=(const IVector<number>& a, const IVector<number>& b) {
+        return !(a == b);
+    }
+
 
     ////////////////////////////////////////////
     /// Sparse matrix

@@ -579,6 +579,42 @@ TEST(Matrix, solve) {
     ASSERT_THROW(solve(A2, X2, B2), except::NotInImageSpaceException);
 }
 
+TEST(IVector, equals) {
+    TernaryMatrix A = {
+        {
+            { 2, 1, 2, 0, 2 },
+            { 1, 0, 2, 1, 0 },
+            { 0, 1, 0, 2, 0 },
+            { 0, 2, 1, 0, 1 }
+        },
+        { 0, 1, 1, 2 },
+        { 2, 2, 3, 3, 3 }
+    };
 
-// TODO add tests for IVector
-//  - comparison
+    const TernaryTimeVector expected_A1 {
+        { 1, 0, 1, 2},
+        { 0, 1, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V1 {
+        { 2, 0, 1, 2},
+        { 0, 1, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V2 {
+        { 1, 0, 1, 2},
+        { 0, 0, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V3 {
+        { 1, 0, 1, 2},
+        { 0, 0, 1, 2 },
+        3
+    };
+
+    ASSERT_EQ(expected_A1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, expected_A1);
+}
