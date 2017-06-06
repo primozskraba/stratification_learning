@@ -3,7 +3,11 @@ namespace ts {
     constexpr tstep::tstep(const int& _ts) : ts(_ts) {}
 
     constexpr bool tstep::isUndefined() const {
-        return ts == std::numeric_limits<decltype(ts)>::max();
+        return ts == UNDEFINED;
+    }
+
+    constexpr bool tstep::isInfinity() const {
+        return ts == INFINITY;
     }
 
     constexpr bool tstep::operator ==(const tstep& other) const {
