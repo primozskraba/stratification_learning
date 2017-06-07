@@ -41,6 +41,12 @@ namespace strct {
     public:
         // inherit all the constructors from matrix
         using Mat::Mat;
+	
+        // lazy insertion - no guarantee time vectors are ok
+//	void insert(TimeVector<num>)
+
+	// low level check the map is well formed
+	bool verify();
 
         /// applies itself to the space
         Space<number> operator ()(const Space<number>& space) const;
@@ -58,18 +64,18 @@ namespace strct {
 
     ////////////////////////////////////////
     /// Module
-    template <typename number>
-    class Module {
-    private:
-        Space<number> generators;
-        Map<number> map;
-        Space<number> relations;
+ //   template <typename number>
+   // class Module {
+  //  private:
+    //    Space<number> generators;
+      //  Map<number> map;
+      //  Space<number> relations;
 
-    public:
-    };
+   // public:
+   // };
 
-    using BinaryModule = Module<num::binary>;
-    using TernaryModule = Module<num::ternary>;
+  //  using BinaryModule = Module<num::binary>;
+   // using TernaryModule = Module<num::ternary>;
 }
 
 #include "struct.hpp"

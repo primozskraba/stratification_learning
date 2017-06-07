@@ -347,6 +347,13 @@ namespace la {
             vec(dim),
             simplex_times(dim, 0),
             vector_time(0) {}
+ 
+    template <typename number>
+    TimeVector<number>::TimeVector(const Vec& _vec, const tstep& _vector_time):
+        vec(_vec),
+        simplex_times(_vec.dim(),0),
+        vector_time(_vector_time) {}
+
 
     template <typename number>
     TimeVector<number>::TimeVector(const Vec& _vec, const std::vector<tstep>& _simplex_times,

@@ -58,33 +58,30 @@ namespace top{
         void insert(const indextype&);
         
        
-
     };
+
 
     template<typename time,typename indextype>
     class Complex{
     private:
-<<<<<<< HEAD
 	using simplex = Simplex<indextype>;     
     	using entry = std::pair<simplex,time>;
     	using fvector = std::vector<entry>;
     
-        // compare with unordered_map	
-  	std::map<const std::reference_wrapper<simplex> ,int> reverse_map;
-
-    	fvector data;
-    	int num_simplices;
-       bool finalized;	
-        using simplex = Simplex<indextype>;
-        using entry = std::pair<simplex,time>;
-        using fvector = std::vector<entry>;
 
         // compare with unordered_map
-    std::map<std::reference_wrapper<const simplex> ,int> reverse_map;
+        struct mp_cmp 
+	{
+		inline bool operator()(const simplex& a,const simplex& b) const { 
+			return a<b;
+		}	
+	};	
+	std::map<const std::reference_wrapper<const simplex> ,int,mp_cmp> reverse_map;
 
         fvector data;
         int num_simplices;
-       bool finalized;
+        bool finalized;
+
     public:
 
     explicit Complex(const int& num_simp=0);
@@ -98,25 +95,25 @@ namespace top{
     void finalize();
     void verify() const;
 
-    bool is_finalized() const {return finalized;}
-    bool is_defined(const simplex&) const;
-    time& getTime(const int&) const;
-    time& getTime(const simplex&) const;
+    bool is_finalized() const; 
+    bool is_defined(const simplex&) ;
+    time getTime(const int&) ;
+    time getTime(const simplex&) ;
 
-    int& getIndex(const simplex&) const;
+    int getIndex(const simplex&) ;
     const simplex& operator [](const int&) const;
 
     int empty() const { return num_simplices==0;}
 
-        int size() const {return num_simplices;}
+    int size() const {return num_simplices;}
     // should we add begin/end
     };
 
 
 
 
-   template<typename time, typename indextype, typename number>
-   la::Matrix<number>& boundary(const Complex<time,indextype>& C){
+   template<typename number, typename time, typename indextype>
+   la::Matrix<number>& boundary(Complex<time,indextype>& C){
     assert(C.is_finalized());
 #ifdef _VERIFY_CONSTRUCTION
     assert(C.verify());
@@ -125,30 +122,23 @@ namespace top{
 	la::Matrix<number> D(complex_size,complex_size);
 	for(auto i = 0; i< complex_size;++i){
 		la::Vector<number> chain(complex_size);
+		number coeff = -1;
+		const number neg = -1;
+
+
 		if(C[i].dim()>0){
 			for(auto j=0; j<=C[i].dim(); ++j){
-		    	   //chain.insert(C.getIndex(C[i].erase(j)), );	
+		    		const Simplex<indextype> s =  C[i].erase(j);
+				int indx = C.getIndex(s); 
+		        	chain.pushBack(indx,coeff);
+		        coeff=coeff*neg;	   
 			}
 		}
-		else {
-			// insert empty chain
-		}
 		
-	}
-    int complex_size = C.size();
-    la::Matrix<number> D(complex_size,complex_size);
-    for(auto i = 0; i< complex_size;++i){
-        la::Vector<number> chain(complex_size);
-        if(C[i].dim()>0){
-            for(auto j=0; j<=C[i].dim(); ++j){
-                   /* chain.insert(C.getIndex(C[i].erase(j)), ); */
-                // TODO
-            }
-        }
-        else {
-            // insert empty chain
-        }
+		la::TimeVector<number> fchain(chain,C.getTime(i));
 
+		D.insert(fchain,i);
+	
     }
    }
 

@@ -30,11 +30,21 @@ namespace la {
         vector vect;
         int dimension;
     public:
-        explicit Vector(const int& dim);
+     	using iterator = typename vector::iterator;
+
+     	explicit Vector(const int& dim);
 
         Vector(std::initializer_list<number>);
         /// constructs a vector with a single non-zero entry
         Vector(const int& dim, const SparseEntry&);
+
+
+	void pushBack(int i,number x){
+		vect.push_back(SparseEntry(i,x));	
+	}
+
+	
+
 
         // COPY/MOVE operations
         // copy
@@ -46,6 +56,10 @@ namespace la {
 
         bool operator ==(const Vec&) const;
         bool operator !=(const Vec&) const;
+
+	iterator begin(){return vect.begin();}
+	iterator end(){return vect.end();}
+
 
         /// resizes the vector
         void resize(const int& dim);
@@ -194,7 +208,9 @@ namespace la {
         tstep vector_time;
     public:
         TimeVector(const int& dim);
-        TimeVector(const Vec&, const std::vector<tstep>&, const tstep&);
+       	TimeVector(const Vec&, const tstep&);
+        
+	TimeVector(const Vec&, const std::vector<tstep>&, const tstep&);
         // TODO add constructor to convert a VectorWrapper to TimeVector
 
         /// resizes the vector and sets the time steps
@@ -272,6 +288,26 @@ namespace la {
         Matrix(Mat&&);
         Mat& operator =(Mat&&);
 
+	void lazyInsert(TimeVector<number>& T,int i){
+		mat[i] = T.getVector();
+		col_times[i] = T.getTimeStep();	
+	}	
+
+       void insert(TimeVector<number>& T,int i ){
+		mat[i] = T.getVector();
+		col_times[i] = T.getTimeStep();
+		auto times = T.getSimplexTimes(); 	
+		for(auto j = mat[i].begin(); j!=mat[i].end(); ++j){
+			row_times[j->first] = times[j->first];
+		}			       
+        }
+
+	// if a self map we can copy col times
+	// to row times
+       void copyTimes(){
+       		row_times = col_times;
+
+       }
         // comparison
 
         /// equality operator

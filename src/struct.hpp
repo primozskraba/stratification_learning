@@ -11,6 +11,26 @@ namespace strct {
         return result;
     }
 
+ 
+    //template <typename number>
+    //Map<number>::Map(int nrows,int ncols){
+   // }
+
+   // template <typename number>
+    //void Map<number>::insert(la::TimeVector<number>& tvect){
+     //     lazyInsert()
+   // }
+
+    template <typename number>
+    bool Map<number>::verify(){
+   	return true;
+    }
+    
+
+
+
+
+
     template <typename number>
     la::TimeVector<number> Map<number>::operator ()(const la::IVector<number>& vec) const {
         la::TimeVector<number> result(Mat::rows());  apply(vec, result);

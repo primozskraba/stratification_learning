@@ -1,11 +1,11 @@
-#include "struct.h"
+//#include "struct.h"
 
-#include "gtest/gtest.h"
+//#include "gtest/gtest.h"
 
-using namespace strct;
+//using namespace strct;
 
-TEST(Module, constructor) {
-    BinaryModule module;
+//TEST(Module, constructor) {
+ //   BinaryModule module;
 
     // TODO
-}
+//}

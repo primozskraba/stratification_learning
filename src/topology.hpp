@@ -203,24 +203,44 @@ namespace top{
 	    }
 	};
 
+
+       	for(int i =0; i<data.size();++i){
+		std::cout<<data[i].first<<"  "<<data[i].second<<std::endl;
+	}
+
+
 	std::sort(data.begin(),data.end(),filt_order());
-	std::unique(data.begin(),data.end());
+
+
+	// unique does not change size of vector - so we need to 
+	// double check - also it may be smart to swap ... this is just a test that will be removed
+	// as memory is our main issue...maybe
+	auto end_it = std::unique(data.begin(),data.end());
+	num_simplices =  end_it - data.begin();
+
+
 	for(int i=0;i<num_simplices;++i){
-		reverse_map.insert(std::make_pair(data[i].first,i));
+		reverse_map.insert(std::make_pair(std::ref(data[i].first),i));
 
 	}
    	finalized=true;
    }
-
+   
    template<typename time, typename indextype>
-   bool Complex<time,indextype>::is_defined(const Simplex<indextype>& simp) const{
-   	return !(reverse_map.find(simp)==reverse_map.end());
+   bool Complex<time,indextype>::is_finalized() const{
+   	return finalized;
+   }
+   
+ 
+   template<typename time, typename indextype>
+   bool Complex<time,indextype>::is_defined(const Simplex<indextype>& simp) {
+   	return !(reverse_map.find(std::ref(simp))==reverse_map.end());
    }
    
    template<typename time,typename indextype> 
    void Complex<time,indextype>::verify() const{
-   	if(is_finalized()) 
-		return false;
+  // 	if(is_finalized()) 
+//		return false;
 
    	for(int i = 0;i<num_simplices;++i){
 		int dim = data[i].first.dim();
@@ -236,19 +256,19 @@ namespace top{
 
 
    template<typename time,typename indextype> 
-   time& Complex<time,indextype>::getTime(const int& index) const{
-   	return data[index].second;
+   time Complex<time,indextype>::getTime(const int& index) {
+   	return data.at(index).second;
    }
 
 
    template<typename time,typename indextype> 
-   time& Complex<time,indextype>::getTime(const Simplex<indextype>& simp) const{
-   	return data[reverse_map[simp]].second;
+   time Complex<time,indextype>::getTime(const Simplex<indextype>& simp) {
+   	return data[reverse_map.at(std::ref(simp))].second;
    }
 
    template<typename time,typename indextype> 
-   int& Complex<time,indextype>::getIndex(const Simplex<indextype>& simp) const{
-   	return reverse_map[simp];
+   int Complex<time,indextype>::getIndex(const Simplex<indextype>& simp) {
+   	return reverse_map.at(std::ref(simp));
    }
 
   template<typename time, typename indextype>
