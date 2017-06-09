@@ -7,18 +7,21 @@
 
 
 namespace ts {
-
     class tstep {
     private:
         int ts;
 
     public:
+        static constexpr int INF= std::numeric_limits<decltype(ts)>::max();
+        static constexpr int UNDEFINED = std::numeric_limits<decltype(ts)>::max()-1;
+
         /// default constructor (sets to undefined if called without an argument)
-        constexpr tstep(const int& ts=std::numeric_limits<decltype(ts)>::max());
+        constexpr tstep(const int& ts=UNDEFINED);
 
         constexpr int step() const { return ts; }
 
         constexpr bool isUndefined() const;
+        constexpr bool isInfinity() const;
 
 
         /// comparison operator

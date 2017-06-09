@@ -42,6 +42,9 @@ namespace num {
     constexpr number<modulo> operator *(const int&, const number<modulo>&);
 
     template <int modulo>
+    constexpr number<modulo> operator /(const int&, const number<modulo>&);
+
+    template <int modulo>
     std::ostream& operator <<(std::ostream&, const number<modulo>&);
 
     // type aliases

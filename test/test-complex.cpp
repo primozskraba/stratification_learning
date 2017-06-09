@@ -95,11 +95,19 @@ TEST(Complex,Boundary){
 Complex<int,int> C = { { {0},0  }, {{1},0},{{0,1},1 } };            
 C.finalize();
 ASSERT_EQ(C.is_finalized(), true);
-la::Matrix<ternary> A = boundary<ternary>(C);
+auto A = boundary<ternary>(C);
 
+std::cout<<A<<std::endl;
+std::vector<std::pair<ts::tstep,ts::tstep> > bc;
+strct::Module<ternary> M(A);
 
-ASSERT_EQ(MatrixEntry<ternary>({1,1}),   A(2,0));
-ASSERT_EQ(MatrixEntry<ternary>({-1,1}),   A(0,0));          
+M.getBarcode(bc);
+for(auto i:bc){
+	std::cout<<i.first<<"  "<<i.second<<std::endl;
+}
+
+//ASSERT_EQ(MatrixEntry<ternary>({1,1}),   A(2,0));
+//ASSERT_EQ(MatrixEntry<ternary>({-1,1}),   A(0,0));          
 
 //todo : add zero check
 

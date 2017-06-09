@@ -7,6 +7,7 @@
 #include "test-module.cpp"
 #include "test-simplex.cpp"
 #include "test-complex.cpp"
+#include "test-triangulation.cpp"
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -156,19 +156,19 @@ namespace top{
 // change this to 0 but reserve the size
    template<typename time,typename indextype>
    Complex<time,indextype>::Complex(const int& num_simp):
-	reverse_map(),
  	data(),
- 	num_simplices(),
-	finalized(false){}	
+ 	num_simplices(num_simp),
+	finalized(false),
+	reverse_map(){}	
 	 
    
 	
    template<typename time,typename indextype>
 	Complex<time,indextype>::Complex(std::initializer_list<std::pair<std::vector<indextype>,time>> simplices):
-   	reverse_map(),
- 	data(),
+        data(),
  	num_simplices(),
-	finalized(false){
+	finalized(false),
+	reverse_map(){
 	    for (auto simp_ptr = simplices.begin(); simp_ptr != simplices.end(); ++simp_ptr) {
 		simplex S;
 		for (auto index_ptr = simp_ptr->first.begin(); index_ptr != simp_ptr->first.end(); ++index_ptr){
@@ -204,11 +204,6 @@ namespace top{
 	};
 
 
-       	for(int i =0; i<data.size();++i){
-		std::cout<<data[i].first<<"  "<<data[i].second<<std::endl;
-	}
-
-
 	std::sort(data.begin(),data.end(),filt_order());
 
 
@@ -220,7 +215,7 @@ namespace top{
 
 
 	for(int i=0;i<num_simplices;++i){
-		reverse_map.insert(std::make_pair(std::ref(data[i].first),i));
+		reverse_map.insert(std::make_pair(std::cref(data[i].first),i));
 
 	}
    	finalized=true;
@@ -233,12 +228,12 @@ namespace top{
    
  
    template<typename time, typename indextype>
-   bool Complex<time,indextype>::is_defined(const Simplex<indextype>& simp) {
-   	return !(reverse_map.find(std::ref(simp))==reverse_map.end());
+   bool Complex<time,indextype>::is_defined(const Simplex<indextype>& simp) const{
+   	return !(reverse_map.find(simp)==reverse_map.end());
    }
    
    template<typename time,typename indextype> 
-   void Complex<time,indextype>::verify() const{
+   bool Complex<time,indextype>::verify() const{
   // 	if(is_finalized()) 
 //		return false;
 
@@ -246,7 +241,7 @@ namespace top{
 		int dim = data[i].first.dim();
 		if(dim>0){
 			for(int j=0;j<=dim;++j){
-				if(!defined(data[i].first.erase(j)))
+				if(!is_defined(data[i].first.erase(j)))
 					return false;
 			}
 		}
@@ -256,19 +251,19 @@ namespace top{
 
 
    template<typename time,typename indextype> 
-   time Complex<time,indextype>::getTime(const int& index) {
+   time Complex<time,indextype>::getTime(const int& index) const {
    	return data.at(index).second;
    }
 
 
    template<typename time,typename indextype> 
-   time Complex<time,indextype>::getTime(const Simplex<indextype>& simp) {
-   	return data[reverse_map.at(std::ref(simp))].second;
+   time Complex<time,indextype>::getTime(const Simplex<indextype>& simp) const {
+   	return data[reverse_map.at(simp)].second;
    }
 
    template<typename time,typename indextype> 
-   int Complex<time,indextype>::getIndex(const Simplex<indextype>& simp) {
-   	return reverse_map.at(std::ref(simp));
+   int Complex<time,indextype>::getIndex(const Simplex<indextype>& simp) const {
+   	return reverse_map.at(simp);
    }
 
   template<typename time, typename indextype>

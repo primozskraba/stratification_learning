@@ -3,12 +3,14 @@
 
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <initializer_list>
 #include <iostream>
 #include <functional>
+#include <boost/functional/hash.hpp>
 
-#include "linalg.h"
+
+#include "struct.h"
 namespace top{
 
     // simplex class - mainly for templating
@@ -16,7 +18,7 @@ namespace top{
 
     template<typename indextype>
     class Simplex{
-        //      friend class Complex<time>;
+        //      friend class Complex<time>
     private:
         using simplex = std::vector<indextype>;
         using Simp = Simplex<indextype>;
@@ -28,9 +30,12 @@ namespace top{
 
         Simplex(std::initializer_list<indextype>);
         Simplex(std::vector<indextype>);
-        
-        
-
+       
+        // can only look at simplex as const
+        using iterator=typename simplex::const_iterator;
+	
+	iterator begin() const {return vertex_list.cbegin();}
+	iterator end() const {return vertex_list.cend();}
 
         // COPY/MOVE operations
         // copy
@@ -64,24 +69,37 @@ namespace top{
     template<typename time,typename indextype>
     class Complex{
     private:
+
 	using simplex = Simplex<indextype>;     
     	using entry = std::pair<simplex,time>;
     	using fvector = std::vector<entry>;
-    
 
-        // compare with unordered_map
-        struct mp_cmp 
-	{
-		inline bool operator()(const simplex& a,const simplex& b) const { 
-			return a<b;
-		}	
-	};	
-	std::map<const std::reference_wrapper<const simplex> ,int,mp_cmp> reverse_map;
+	struct simpEqual {
+    		bool operator()(const simplex& lhs,
+		               const simplex& rhs) const{
+            		return lhs == rhs;
+        	}
+	};
 
-        fvector data;
+	struct simpHash{
+ 		std::size_t operator()(const simplex &s) const{
+			std::size_t hashval = 0 ;
+	    		for(auto& i: s){
+	    	  		boost::hash_combine(hashval, i*2654435761);
+	    		}
+            		return hashval ;
+ 		}
+	};
+
+	fvector data;
         int num_simplices;
         bool finalized;
 
+	std::unordered_map<const std::reference_wrapper<const simplex>,
+			 	int,
+	    			simpHash,
+	        		simpEqual> reverse_map;
+	
     public:
 
     explicit Complex(const int& num_simp=0);
@@ -93,33 +111,40 @@ namespace top{
     void insert(const simplex&, const time&);
 
     void finalize();
-    void verify() const;
+    bool verify() const;
 
     bool is_finalized() const; 
-    bool is_defined(const simplex&) ;
-    time getTime(const int&) ;
-    time getTime(const simplex&) ;
+    bool is_defined(const simplex&) const ;
+    time getTime(const int&) const ;
+    time getTime(const simplex&) const ;
 
-    int getIndex(const simplex&) ;
+    int getIndex(const simplex&) const ;
     const simplex& operator [](const int&) const;
 
     int empty() const { return num_simplices==0;}
 
     int size() const {return num_simplices;}
     // should we add begin/end
+    //
+    void printdebug(){
+	int i=0;
+    	for(auto &a: data){
+		if(i>=num_simplices) break;
+		std::cout<<a.first<<" |  "<<a.second<<std::endl;
+		i++;
+	}
+    }
     };
 
 
 
 
    template<typename number, typename time, typename indextype>
-   la::Matrix<number>& boundary(Complex<time,indextype>& C){
-    assert(C.is_finalized());
-#ifdef _VERIFY_CONSTRUCTION
-    assert(C.verify());
-#endif
+   strct::Map<number> boundary(Complex<time,indextype>& C){
+        assert(C.is_finalized());
+        assert(C.verify());
 	int complex_size = C.size();
-	la::Matrix<number> D(complex_size,complex_size);
+	strct::Map<number> D(complex_size,complex_size);
 	for(auto i = 0; i< complex_size;++i){
 		la::Vector<number> chain(complex_size);
 		number coeff = -1;
@@ -127,19 +152,23 @@ namespace top{
 
 
 		if(C[i].dim()>0){
+			std::cout<<"here "<< C[i].dim()<<std::endl;
 			for(auto j=0; j<=C[i].dim(); ++j){
 		    		const Simplex<indextype> s =  C[i].erase(j);
 				int indx = C.getIndex(s); 
 		        	chain.pushBack(indx,coeff);
-		        coeff=coeff*neg;	   
+					
+		                coeff=coeff*neg;	   
 			}
 		}
-		
-		la::TimeVector<number> fchain(chain,C.getTime(i));
-
-		D.insert(fchain,i);
+		ts::tstep t = C.getTime(i);
+		chain.sort();
+		D.lazyInsert(chain,t,i);
 	
-    }
+    	}
+	D.copyTimes();
+
+	return D;
    }
 
 
@@ -151,6 +180,8 @@ namespace top{
 }
 
 #include "topology.hpp"
+
+
 #endif
 
 

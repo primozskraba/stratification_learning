@@ -9,6 +9,16 @@ project(${PROJECT_NAME_STR} C CXX)
 find_package(GTest REQUIRED)
 find_package(Threads REQUIRED)
 
+find_package(CGAL REQUIRED) 
+include                     (${CGAL_USE_FILE})
+
+find_package(Eigen3 REQUIRED) 
+include                     (${EIGEN3_USE_FILE})
+
+add_definitions             (${CGAL_CXX_FLAGS_INIT})
+include_directories         (${CGAL_INCLUDE_DIRS})
+
+
 # COMPILER FLAGS
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_definitions(-Wall -ansi -Wno-deprecated -pthread -std=c++14)
@@ -36,3 +46,5 @@ add_executable(runUnitTests tests.cpp ${TEST_FILES})
 # LINK LIBRARIES
 target_link_libraries(runUnitTests ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} pthread)
 target_link_libraries(runUnitTests libraryCode)
+
+target_link_libraries   (runUnitTests ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES})

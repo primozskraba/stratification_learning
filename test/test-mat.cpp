@@ -355,68 +355,76 @@ TEST(Matrix, multiply) {
     ASSERT_EQ(AtimesB7, A_time * B_time[7]);
 }
 
-TEST(Matrix, isEchelonForm) {
+TEST(Matrix, reduce) {
+    TernaryMatrix A = {
+        {
+            { 2, 2, 0, 2, 0 },
+            { 1, 0, 2, 0, 2 },
+            { 0, 1, 1, 0, 0 },
+            { 0, 0, 0, 1, 1 }
+        },
+        { 0, 1, 2, 3 },
+        { 0, 2, 2, 3, 3 }
+    };
+
+    TernaryMatrix expected = {
+        {
+            { 2, 2, 0, 2, 0 },
+            { 1, 0, 0, 0, 0 },
+            { 0, 1, 0, 0, 0 },
+            { 0, 0, 0, 1, 0 }
+        },
+        { 0, 1, 2, 3 },
+        { 0, 2, 2, 3, 3 }
+    };
+
+    A.reduce();
+    ASSERT_EQ(expected, A);
+    ASSERT_TRUE(A.isReducedForm());
+}
+
+TEST(Matrix, isReducedForm) {
     TernaryMatrix pos1 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 2, 2, 2 },
-        { 0, 1, 1, 0, 0 },
-        { 0, 0, 0, 1, 1 },
+        { 2, 2, 0, 0, 0 },
+        { 1, 0, 0, 2, 0 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
         { 0, 0, 0, 0, 0 }
     };
     TernaryMatrix neg1 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 2, 2, 2 },
-        { 0, 0, 1, 0, 0 },
-        { 0, 1, 0, 1, 1 },
-        { 0, 0, 0, 0, 0 }
-    };
-
-    ASSERT_TRUE(pos1.isEchelonForm());
-    ASSERT_FALSE(neg1.isEchelonForm());
-
-    TernaryMatrix pos2 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 0, 2, 2 },
-        { 0, 1, 0, 0, 0 },
-        { 0, 0, 0, 1, 1 },
-        { 0, 0, 0, 0, 0 }
-    };
-    TernaryMatrix neg2 = {
-        { 2, 2, 0, 0, 1 },
-        { 1, 0, 0, 2, 2 },
+        { 2, 2, 0, 0, 0 },
+        { 1, 0, 0, 2, 0 },
         { 0, 0, 0, 0, 0 },
         { 0, 1, 0, 1, 0 },
         { 0, 0, 0, 0, 0 }
     };
 
-    ASSERT_TRUE(pos2.isEchelonForm());
-    ASSERT_FALSE(neg2.isEchelonForm());
+    ASSERT_TRUE(pos1.isReducedForm());
+    ASSERT_FALSE(neg1.isReducedForm());
 
-    TernaryMatrix pos3 = {
-        {
-            { 2, 2, 0, 0, 1 },
-            { 1, 0, 2, 2, 2 },
-            { 0, 1, 1, 0, 0 },
-            { 0, 0, 0, 1, 1 },
-            { 0, 0, 0, 0, 0 }
-        },
-        { 0, 1, 2, 2, 3 },
-        { 1, 2, 2, 3, 3 }
+    TernaryMatrix pos2 = {
+        { 2, 2, 0, 0, 2 },
+        { 1, 0, 0, 2, 0 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 1 }
     };
-    TernaryMatrix neg3 = {
-        {
-            { 2, 2, 0, 0, 1 },
-            { 1, 0, 2, 2, 2 },
-            { 0, 0, 1, 0, 0 },
-            { 0, 1, 0, 1, 1 },
-            { 0, 0, 0, 0, 0 }
-        },
-        { 0, 1, 2, 2, 3 },
-        { 1, 2, 2, 3, 3 }
+    TernaryMatrix neg2 = {
+        { 2, 2, 0, 0, 1 },
+        { 1, 0, 0, 2, 2 },
+        { 0, 1, 0, 0, 0 },
+        { 0, 0, 0, 1, 0 },
+        { 0, 0, 0, 0, 0 }
     };
 
-    ASSERT_TRUE(pos3.isEchelonForm());
-    ASSERT_FALSE(neg3.isEchelonForm());
+    ASSERT_TRUE(pos2.isReducedForm());
+    ASSERT_FALSE(neg2.isReducedForm());
+
+    neg1.reduce();
+    neg2.reduce();
+
+    ASSERT_TRUE(neg1.isReducedForm());
+    ASSERT_TRUE(neg2.isReducedForm());
 }
 
 TEST(Matrix, solve) {
@@ -449,12 +457,67 @@ TEST(Matrix, solve) {
         { 0, 1, 1, 2, 2, 2, 3, 3, 4, 4 }
     };
 
+    A_time.reduce();
+
     TernaryMatrix X;    solve(A_time, X, C_time);
     ASSERT_EQ(C_time, A_time * X);
 
     // reusing the same input
     solve(A_time, X, C_time);
     ASSERT_EQ(C_time, A_time * X);
+
+
+    BinaryMatrix G = {
+        {
+            { 1,  0,  0,  0,  0,  0 },
+            { 0,  1,  0,  0,  0,  0 },
+            { 0,  0,  1,  0,  0,  0 },
+            { 0,  0,  0,  1,  0,  0 },
+            { 0,  0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  0,  1 },
+            { 0,  0,  0,  0,  0,  0 },
+            { 0,  0,  0,  0,  0,  0 }
+        },
+        { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 4 },
+        { 0, 0, 1, 1, 4, 4 },
+    };
+
+    BinaryMatrix R = {
+        {
+            { 1,  0,  1,  0,  0 },
+            { 1,  1,  0,  0,  0 },
+            { 0,  1,  0,  0,  0 },
+            { 0,  0,  1,  0,  0 },
+            { 0,  0,  0,  1,  1 },
+            { 0,  0,  0,  1,  1 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  1,  0 },
+            { 0,  0,  0,  0,  0 },
+            { 0,  0,  0,  0,  0 }
+        },
+        { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 4 },
+        { 1, 1, 2, 2, 3 }
+    };
+
+    BinaryMatrix M = {
+        {
+            { 1,  0,  1,  0,  0 },
+            { 1,  1,  0,  0,  0 },
+            { 0,  1,  0,  0,  0 },
+            { 0,  0,  1,  0,  0 },
+            { 0,  0,  0,  0,  1 },
+            { 0,  0,  0,  1,  0 },
+        },
+        { 0, 0, 1, 1, 4, 4 },
+        { 1, 1, 2, 2, 3 }
+    };
+
+    BinaryMatrix M1; solve(G, M1, R);
+    ASSERT_EQ(M, M1);
 
 #ifndef NDEBUG
     TernaryMatrix A_time1 = {
@@ -516,8 +579,42 @@ TEST(Matrix, solve) {
     ASSERT_THROW(solve(A2, X2, B2), except::NotInImageSpaceException);
 }
 
+TEST(IVector, equals) {
+    TernaryMatrix A = {
+        {
+            { 2, 1, 2, 0, 2 },
+            { 1, 0, 2, 1, 0 },
+            { 0, 1, 0, 2, 0 },
+            { 0, 2, 1, 0, 1 }
+        },
+        { 0, 1, 1, 2 },
+        { 2, 2, 3, 3, 3 }
+    };
 
+    const TernaryTimeVector expected_A1 {
+        { 1, 0, 1, 2},
+        { 0, 1, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V1 {
+        { 2, 0, 1, 2},
+        { 0, 1, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V2 {
+        { 1, 0, 1, 2},
+        { 0, 0, 1, 2 },
+        2
+    };
+    const TernaryTimeVector not_expected_A1_V3 {
+        { 1, 0, 1, 2},
+        { 0, 0, 1, 2 },
+        3
+    };
 
-
-// TODO add tests for IVector
-//  - comparison
+    ASSERT_EQ(expected_A1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, A[1]);
+    ASSERT_NE(not_expected_A1_V1, expected_A1);
+}
