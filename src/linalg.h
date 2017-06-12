@@ -15,16 +15,16 @@ namespace la {
     using namespace ts;
 
     // forward declarations
-    template <typename number> class Matrix;
+    template <typename number, typename timeunit> class Matrix;
 
     ////////////////////////////////////////////
     /// Sparse vector implementation
-    template <typename number>
+    template <typename number,typename timeunit=tstep>
     class Vector {
-        friend class Matrix<number>;
+        friend class Matrix<number,timeunit>;
     private:
         using SparseEntry = std::pair<int,number>;
-        using Vec = Vector<number>;
+        using Vec = Vector<number,timeunit>;
 
         using vector = std::vector<SparseEntry>;
 
@@ -99,8 +99,8 @@ namespace la {
     };
 
     // non-member functions
-    template <typename number>
-    Vector<number> operator +(const Vector<number>&, const Vector<number>&);
+    template <typename number,typename timeunit=tstep>
+    Vector<number, timeunit> operator +(const Vector<number,timeunit>&, const Vector<number,timeunit>&);
 
     // aliases
     using BinaryVector = Vector<binary>;
@@ -108,42 +108,42 @@ namespace la {
 
     ////////////////////////////////////////////
     /// Single entry returned from a matrix
-    template <typename number>
+    template <typename number,typename timeunit=tstep>
     class MatrixEntry {
     private:
         number val;
-        tstep tm {0};
+        timeunit tm {0};
     public:
         /// default constructor, sets time and value
-        constexpr MatrixEntry(const number& val, const tstep& time=0);
+        constexpr MatrixEntry(const number& val, const timeunit& time=0);
         /// constructor which takes value as int and sets time to 0
         constexpr MatrixEntry(const int& val);
 
         constexpr const number& value() const { return val; }
-        constexpr const tstep& time() const { return tm; }
+        constexpr const timeunit& time() const { return tm; }
     };
 
     // equality operator
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>&, const MatrixEntry<number>&);
-    template <typename number>
-    constexpr bool operator !=(const MatrixEntry<number>&, const MatrixEntry<number>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>&, const MatrixEntry<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator !=(const MatrixEntry<number,timeunit>&, const MatrixEntry<number,timeunit>&);
     // equality operator, assumes the time of the second operand is 0
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>&, const number&);
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>&, const std::pair<number,tstep>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>&, const number&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>&, const std::pair<number,timeunit>&);
     // equality operator, assumes the time of the first operand is 0
-    template <typename number>
-    constexpr bool operator ==(const number&, const MatrixEntry<number>&);
-    template <typename number>
-    constexpr bool operator ==(const int&, const MatrixEntry<number>&);
-    template <typename number>
-    constexpr bool operator ==(const std::pair<number,tstep>&, const MatrixEntry<number>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const number&, const MatrixEntry<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const int&, const MatrixEntry<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    constexpr bool operator ==(const std::pair<number,timeunit>&, const MatrixEntry<number,timeunit>&);
 
     // write to stream operator
-    template <typename number>
-    std::ostream& operator <<(std::ostream&, const MatrixEntry<number>&);
+    template <typename number, typename timeunit=tstep>
+    std::ostream& operator <<(std::ostream&, const MatrixEntry<number,timeunit>&);
 
     // type definitions
     using BinaryEntry = MatrixEntry<binary>;
@@ -158,17 +158,17 @@ namespace la {
     ////////////////////////////////////////////
     /// A base vector class which defines the public
     /// interface which all vectors use
-    template <typename number>
+    template <typename number, typename timeunit=tstep>
     class IVector {
     protected:
-        using Vec = Vector<number>;
+        using Vec = Vector<number,timeunit>;
 
     public:
         virtual ~IVector() {}
 
         /// get element
-        MatrixEntry<number> operator [](const int&) const;
-        tstep getTime(const int&) const;
+        MatrixEntry<number,timeunit> operator [](const int&) const;
+        timeunit getTime(const int&) const;
 
         /// returns the vectors dimension
         int dim() const { return getVector().dim(); }
@@ -178,28 +178,28 @@ namespace la {
         int pivotDim() const { return getVector().pivotDim(); }
 
         virtual const Vec& getVector() const = 0;
-        virtual const std::vector<tstep>& getSimplexTimes() const = 0;
-        virtual const tstep& getTimeStep() const = 0;
+        virtual const std::vector<timeunit>& getSimplexTimes() const = 0;
+        virtual const timeunit& getTimeStep() const = 0;
     };
 
 
     ////////////////////////////////////////////
     /// A wrapper for a vector, holds a reference to
     /// the vector itself and the entry times
-    template <typename number>
-    class VectorWrapper : public IVector<number> {
+    template <typename number, typename timeunit=tstep>
+    class VectorWrapper : public IVector<number,timeunit> {
     private:
-        using Vec = typename IVector<number>::Vec;
+        using Vec = typename IVector<number,timeunit>::Vec;
 
         const Vec& vec;
-        const std::vector<tstep>& simplex_times;
-        const tstep& vector_time;
+        const std::vector<timeunit>& simplex_times;
+        const timeunit& vector_time;
     public:
-        VectorWrapper(const Vec&, const std::vector<tstep>&, const tstep&);
+        VectorWrapper(const Vec&, const std::vector<timeunit>&, const timeunit&);
 
         const Vec& getVector() const { return vec; }
-        const std::vector<tstep>& getSimplexTimes() const { return simplex_times; }
-        const tstep& getTimeStep() const { return vector_time; }
+        const std::vector<timeunit>& getSimplexTimes() const { return simplex_times; }
+        const timeunit& getTimeStep() const { return vector_time; }
     };
 
     using BinaryVectorWrapper = VectorWrapper<binary>;
@@ -209,31 +209,31 @@ namespace la {
     ////////////////////////////////////////////
     /// A vector which also encodes the time step
     /// of each of its siplices.
-    template <typename number>
-    class TimeVector : public IVector<number> {
+    template <typename number, typename timeunit=tstep>
+    class TimeVector : public IVector<number,timeunit> {
     private:
-        using Vec = typename IVector<number>::Vec;
+        using Vec = typename IVector<number,timeunit>::Vec;
 
         Vec vec;
-        std::vector<tstep> simplex_times;
-        tstep vector_time;
+        std::vector<timeunit> simplex_times;
+        timeunit vector_time;
     public:
         TimeVector(const int& dim);
-       	TimeVector(const Vec&, const tstep&);
+       	TimeVector(const Vec&, const timeunit&);
         
-	TimeVector(const Vec&, const std::vector<tstep>&, const tstep&);
+	TimeVector(const Vec&, const std::vector<timeunit>&, const timeunit&);
         // TODO add constructor to convert a VectorWrapper to TimeVector
 
         /// resizes the vector and sets the time steps
-        void resize(const int& dim, const std::vector<tstep>&, const tstep&);
+        void resize(const int& dim, const std::vector<timeunit>&, const timeunit&);
         /// overrides the vector to contain only zeros
         void makeZero();
 
         const Vec& getVector() const { return vec; }
         Vec& getVector() { return vec; }
 
-        const std::vector<tstep>& getSimplexTimes() const { return simplex_times; }
-        const tstep& getTimeStep() const { return vector_time; }
+        const std::vector<timeunit>& getSimplexTimes() const { return simplex_times; }
+        const timeunit& getTimeStep() const { return vector_time; }
     };
 
     using BinaryTimeVector = TimeVector<binary>;
@@ -241,10 +241,10 @@ namespace la {
 
 
     /// vector comparison
-    template <typename number>
-    bool operator ==(const IVector<number>&, const IVector<number>&);
-    template <typename number>
-    bool operator !=(const IVector<number>&, const IVector<number>&);
+    template <typename number, typename timeunit=tstep>
+    bool operator ==(const IVector<number,timeunit>&, const IVector<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    bool operator !=(const IVector<number,timeunit>&, const IVector<number,timeunit>&);
 
 
 
@@ -255,24 +255,24 @@ namespace la {
 
     ////////////////////////////////////////////
     /// Sparse matrix implementation
-    template <typename number>
+    template <typename number, typename timeunit=tstep>
     class Matrix {
     private:
         // type aliases
-        using Vec = Vector<number>;
-        using Mat = Matrix<number>;
+        using Vec = Vector<number,timeunit>;
+        using Mat = Matrix<number,timeunit>;
 
         using SparseEntry = typename Vec::SparseEntry;
         using SparseMatrix = std::vector<Vec>;
 
         SparseMatrix mat;     // stores the column vectors
-        std::vector<tstep> row_times;
-        std::vector<tstep> col_times;
+        std::vector<timeunit> row_times;
+        std::vector<timeunit> col_times;
 
     public:
         // types which are output by the matrix
-        using Entry = MatrixEntry<number>;
-        using TmVector = TimeVector<number>;
+        using Entry = MatrixEntry<number,timeunit>;
+        using TmVector = TimeVector<number,timeunit>;
 
         /// constructs an empty matrix with the given number of rows and columns
         /// all the rows and columns are given time 0
@@ -280,15 +280,15 @@ namespace la {
         /// constructs an empty matrix with the given number of rows and columns
         /// also sets the row and col times
         explicit Matrix(const int& rows, const int& cols,
-                const std::vector<tstep>& row_times, const std::vector<tstep>& col_times);
+                const std::vector<timeunit>& row_times, const std::vector<timeunit>& col_times);
 
         /// constructs a matrix from a list of (dense) row vectors
         /// all times are assumed to be 0
         Matrix(std::initializer_list<std::vector<number>>);
         /// constructs a matrix from a list of (dense) row vectors
         /// the row and column times are specified as the second and third argument
-        Matrix(std::initializer_list<std::vector<number>> vals, const std::vector<tstep>& row_times,
-                const std::vector<tstep>& col_times);
+        Matrix(std::initializer_list<std::vector<number>> vals, const std::vector<timeunit>& row_times,
+                const std::vector<timeunit>& col_times);
         /// constructs a matrix from a list of column vectors
         /// all times are set to 0
         template <typename... Vecs> Matrix(const Vec&, Vecs const&...);
@@ -301,25 +301,15 @@ namespace la {
         Matrix(Mat&&);
         Mat& operator =(Mat&&);
 
-	void lazyInsert(Vector<number>& v,tstep &t,int i){
+	void lazyInsert(Vector<number,timeunit>& v,timeunit &t,int i){
 		mat[i] = v;
 		col_times[i] = t;	
 	}	
-
-       void insert(TimeVector<number>& T,int i ){
-		mat[i] = T.getVector();
-		col_times[i] = T.getTimeStep();
-		auto times = T.getSimplexTimes(); 	
-		for(auto j = mat[i].begin(); j!=mat[i].end(); ++j){
-			row_times[j->first] = times[j->first];
-		}			       
-        }
 
 	// if a self map we can copy col times
 	// to row times
        void copyTimes(){
        		row_times = col_times;
-
        }
         // comparison
 
@@ -332,13 +322,13 @@ namespace la {
         /// access element at position row_n, col_n
         Entry operator ()(const int& rowN, const int& colN) const;
         /// returns the time of the vector
-        tstep getColTime(const int&) const;
+        timeunit getColTime(const int&) const;
         /// returns the time step of the simplex
-        tstep getRowTime(const int&) const;
+        timeunit getRowTime(const int&) const;
         /// returns the time associated with the (rowN,colN)-th entry
-        tstep getEntryTime(const int& rowN, const int& colN) const;
+        timeunit getEntryTime(const int& rowN, const int& colN) const;
         /// access the k-th column vector
-        VectorWrapper<number> operator [](const int& colN) const;
+        VectorWrapper<number,timeunit> operator [](const int& colN) const;
 
         // PROPERTIES
 
@@ -356,7 +346,7 @@ namespace la {
         /// changes the dimensions of the matrix, clears the matrix in the process
         void resize(const int& rows, const int& cols);
         void resize(const int& rows, const int& cols,
-               const std::vector<tstep>& row_times, const std::vector<tstep>& col_times);
+               const std::vector<timeunit>& row_times, const std::vector<timeunit>& col_times);
         /// reshapes the matrix and puts ones on the diagonal, sets all times to 0
         void make_identity(const int& dim);
 
@@ -367,7 +357,7 @@ namespace la {
 
         /// mulitplication
         void multiply(const Mat&, Mat&) const;
-        void multiply(const IVector<number>&, TmVector&) const;
+        void multiply(const IVector<number,timeunit>&, TmVector&) const;
 
         /// decompose into the kernel and image
         void decompose(Mat& kernel, Mat& image) const;
@@ -384,29 +374,29 @@ namespace la {
         void transpose(SparseMatrix&) const;
     };
 
-    template <typename number>
-    Matrix<number> operator *(const Matrix<number>&, const Matrix<number>&);
+    template <typename number, typename timeunit=tstep>
+    Matrix<number,timeunit> operator *(const Matrix<number,timeunit>&, const Matrix<number,timeunit>&);
 
-    template <typename number>
-    TimeVector<number> operator *(const Matrix<number>&, const IVector<number>&);
+    template <typename number, typename timeunit=tstep>
+    TimeVector<number,timeunit> operator *(const Matrix<number,timeunit>&, const IVector<number,timeunit>&);
 
-    template <typename number>
-    void multiply(const Matrix<number>&, const Matrix<number>&, Matrix<number>&);
+    template <typename number, typename timeunit=tstep>
+    void multiply(const Matrix<number,timeunit>&, const Matrix<number,timeunit>&, Matrix<number,timeunit>&);
 
-    template <typename number>
-    void multiply(const Matrix<number>&, const IVector<number>&, TimeVector<number>&);
+    template <typename number, typename timeunit=tstep>
+    void multiply(const Matrix<number,timeunit>&, const IVector<number,timeunit>&, TimeVector<number,timeunit>&);
 
     /// solves the system A*X = B
-    template <typename number>
-    void solve(const Matrix<number>& A, Matrix<number>& X, const Matrix<number>& B);
+    template <typename number, typename timeunit=tstep>
+    void solve(const Matrix<number,timeunit>& A, Matrix<number,timeunit>& X, const Matrix<number,timeunit>& B);
 
     // I/O
-    template <typename number>
-    std::ostream& operator <<(std::ostream&, const Vector<number>&);
-    template <typename number>
-    std::ostream& operator <<(std::ostream&, const IVector<number>&);
-    template <typename number>
-    std::ostream& operator <<(std::ostream&, const Matrix<number>&);
+    template <typename number,typename timeunit=tstep>
+    std::ostream& operator <<(std::ostream&, const Vector<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    std::ostream& operator <<(std::ostream&, const IVector<number,timeunit>&);
+    template <typename number, typename timeunit=tstep>
+    std::ostream& operator <<(std::ostream&, const Matrix<number,timeunit>&);
 
     using BinaryMatrix = Matrix<binary>;
     using TernaryMatrix = Matrix<ternary>;

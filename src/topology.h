@@ -31,7 +31,10 @@ namespace top{
         Simplex(std::initializer_list<indextype>);
         Simplex(std::vector<indextype>);
        
-        // can only look at simplex as const
+        // can only look at simplex as const  
+	// it is only  meant to check - one 
+	// should never construct a simplex using iterators
+	// but rather insert or constructers
         using iterator=typename simplex::const_iterator;
 	
 	iterator begin() const {return vertex_list.cbegin();}
@@ -66,14 +69,20 @@ namespace top{
     };
 
 
-    template<typename time,typename indextype>
+    template<typename timeunit,typename indextype>
     class Complex{
     private:
 
 	using simplex = Simplex<indextype>;     
-    	using entry = std::pair<simplex,time>;
+    	using entry = std::pair<simplex,timeunit>;
     	using fvector = std::vector<entry>;
+	fvector data;
+        int num_simplices;
+        bool finalized;
 
+	//
+	// unordered map structures
+	//
 	struct simpEqual {
     		bool operator()(const simplex& lhs,
 		               const simplex& rhs) const{
@@ -85,15 +94,14 @@ namespace top{
  		std::size_t operator()(const simplex &s) const{
 			std::size_t hashval = 0 ;
 	    		for(auto& i: s){
+				//magic hashing to reduce collisions
 	    	  		boost::hash_combine(hashval, i*2654435761);
 	    		}
             		return hashval ;
  		}
 	};
 
-	fvector data;
-        int num_simplices;
-        bool finalized;
+
 
 	std::unordered_map<const std::reference_wrapper<const simplex>,
 			 	int,
@@ -104,19 +112,19 @@ namespace top{
 
     explicit Complex(const int& num_simp=0);
 
-    Complex(std::initializer_list<std::pair<std::vector<indextype>,time>>);
+    Complex(std::initializer_list<std::pair<std::vector<indextype>,timeunit>>);
 
     //TODO add copy/move, a complex with empty
 
-    void insert(const simplex&, const time&);
+    void insert(const simplex&, const timeunit&);
 
     void finalize();
     bool verify() const;
 
     bool is_finalized() const; 
     bool is_defined(const simplex&) const ;
-    time getTime(const int&) const ;
-    time getTime(const simplex&) const ;
+    timeunit getTime(const int&) const ;
+    timeunit getTime(const simplex&) const ;
 
     int getIndex(const simplex&) const ;
     const simplex& operator [](const int&) const;
@@ -124,53 +132,15 @@ namespace top{
     int empty() const { return num_simplices==0;}
 
     int size() const {return num_simplices;}
-    // should we add begin/end
-    //
-    void printdebug(){
-	int i=0;
-    	for(auto &a: data){
-		if(i>=num_simplices) break;
-		std::cout<<a.first<<" |  "<<a.second<<std::endl;
-		i++;
-	}
-    }
-    };
+
+};
 
 
 
 
-   template<typename number, typename time, typename indextype>
-   strct::Map<number> boundary(Complex<time,indextype>& C){
-        assert(C.is_finalized());
-        assert(C.verify());
-	int complex_size = C.size();
-	strct::Map<number> D(complex_size,complex_size);
-	for(auto i = 0; i< complex_size;++i){
-		la::Vector<number> chain(complex_size);
-		number coeff = -1;
-		const number neg = -1;
-
-
-		if(C[i].dim()>0){
-			std::cout<<"here "<< C[i].dim()<<std::endl;
-			for(auto j=0; j<=C[i].dim(); ++j){
-		    		const Simplex<indextype> s =  C[i].erase(j);
-				int indx = C.getIndex(s); 
-		        	chain.pushBack(indx,coeff);
-					
-		                coeff=coeff*neg;	   
-			}
-		}
-		ts::tstep t = C.getTime(i);
-		chain.sort();
-		D.lazyInsert(chain,t,i);
-	
-    	}
-	D.copyTimes();
-
-	return D;
-   }
-
+   template<typename number, typename timeunit, typename indextype>
+   strct::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C);
+       
 
     // I/O
     template <typename indextype>

@@ -12,11 +12,11 @@ namespace strct {
 
     ////////////////////////////////////////
     /// Space: represented by basis vectors
-    template <typename number>
-    class Space : public Matrix<number> {
+    template <typename number,typename timeunit=tstep>
+    class Space : public Matrix<number,timeunit> {
     private:
         // type aliases
-        using Mat = Matrix<number>;
+        using Mat = Matrix<number,timeunit>;
 
     public:
         // inherit all the constructors from matrix
@@ -29,46 +29,46 @@ namespace strct {
     using BinarySpace = Space<num::binary>;
     using TernarySpace = Space<num::ternary>;
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const Space<number>& space) {
-        return os << static_cast<la::Matrix<number>>(space);
+    template <typename number,typename timeunit=tstep>
+    std::ostream& operator <<(std::ostream& os, const Space<number,timeunit>& space) {
+        return os << static_cast<la::Matrix<number,timeunit>>(space);
     }
 
     ////////////////////////////////////////
     /// Map: a map between two spaces
-    template <typename number>
-    class Map : private Matrix<number> {
+    template <typename number,typename timeunit=tstep>
+    class Map : private Matrix<number,timeunit> {
     private:
         // type aliases
-        using Mat = Matrix<number>;
+        using Mat = Matrix<number,timeunit>;
 
     public:
         // inherit all the constructors from matrix
         using Mat::Mat;
 	using Mat::lazyInsert;
 	using Mat::copyTimes;
-	
+	using Mat::isReducedForm;	
         /// applies itself to the space
-        Space<number> operator ()(const Space<number>& space) const;
+        Space<number,timeunit> operator ()(const Space<number,timeunit>& space) const;
         /// maps the vector
-        TimeVector<number> operator () (const IVector<number>&) const;
+        TimeVector<number,timeunit> operator () (const IVector<number,timeunit>&) const;
 
         /// finds this maps kernal and image
-        void decompose(Space<number>& kernel, Space<number>& image) const;
+        void decompose(Space<number,timeunit>& kernel, Space<number,timeunit>& image) const;
         /// maps the basis vectors of the input space
-        void apply(const Space<number>&, Space<number>&) const;
+        void apply(const Space<number,timeunit>&, Space<number,timeunit>&) const;
         /// maps the vector
-        void apply(const IVector<number>&, TimeVector<number>&) const;
+        void apply(const IVector<number,timeunit>&, TimeVector<number,timeunit>&) const;
 
         /// returns the barcode
         /// TODO: Luka to Primoz: please think of a good name for this function and write a comment :)
-        void getDomainImgTimeDiffs(std::vector<std::pair<tstep,tstep>>&) const;
+        void getDomainImgTimeDiffs(std::vector<std::pair<timeunit,timeunit>>&) const;
 
         /// finds a map from the domain space to the image space
-        static void find(const Space<number>& domain, Map<number>&, const Space<number>& image);
+        static void find(const Space<number,timeunit>& domain, Map<number,timeunit>&, const Space<number,timeunit>& image);
 
-        template <typename num>
-        friend std::ostream& operator <<(std::ostream& os, const Map<num>& map);
+        template <typename num,typename tmunit>
+        friend std::ostream& operator <<(std::ostream& os, const Map<num,tmunit>& map);
     };
 
     using BinaryMap = Map<binary>;
@@ -77,19 +77,19 @@ namespace strct {
 
     ////////////////////////////////////////
     /// Module
-    template <typename number>
+    template <typename number,typename timeunit=tstep>
     class Module {
     private:
-        Space<number> generators;
-        Map<number> map;
-        Space<number> relations;
+        Space<number,timeunit> generators;
+        Map<number,timeunit> map;
+        Space<number,timeunit> relations;
 
     public:
         /// extracts the persistence module from the boundry operator
-        Module(const Map<number>& boundry);
+        Module(const Map<number,timeunit>& boundry);
 
         /// extracts the barcode from this boundry map
-        void getBarcode(std::vector<std::pair<tstep,tstep>>&) const;
+        void getBarcode(std::vector<std::pair<timeunit,timeunit>>&) const;
     };
 
     using BinaryModule = Module<binary>;

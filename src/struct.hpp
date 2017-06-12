@@ -1,13 +1,13 @@
 namespace strct {
 
-    template <typename number>
-    int Space<number>::vector_count() const {
+    template <typename number,typename timeunit>
+    int Space<number,timeunit>::vector_count() const {
         return Mat::cols();
     }
 
-    template <typename number>
-    Space<number> Map<number>::operator ()(const Space<number>& space) const {
-        Space<number> result; apply(space, result);
+    template <typename number,typename timeunit>
+    Space<number,timeunit> Map<number,timeunit>::operator ()(const Space<number,timeunit>& space) const {
+        Space<number,timeunit> result; apply(space, result);
         return result;
     }
 
@@ -31,65 +31,65 @@ namespace strct {
 
 
 
-    template <typename number>
-    TimeVector<number> Map<number>::operator ()(const IVector<number>& vec) const {
-        la::TimeVector<number> result(Mat::rows());  apply(vec, result);
+    template <typename number,typename timeunit>
+    TimeVector<number,timeunit> Map<number,timeunit>::operator ()(const IVector<number,timeunit>& vec) const {
+        la::TimeVector<number,timeunit> result(Mat::rows());  apply(vec, result);
         return result;
     }
 
-    template <typename number>
-    void Map<number>::decompose(Space<number>& kernel, Space<number>& image) const {
-        Matrix<number>::decompose(kernel, image);
+    template <typename number,typename timeunit>
+    void Map<number,timeunit>::decompose(Space<number,timeunit>& kernel, Space<number,timeunit>& image) const {
+        Matrix<number,timeunit>::decompose(kernel, image);
     }
 
-    template <typename number>
-    void Map<number>::apply(const Space<number>& space, Space<number>& result) const {
+    template <typename number,typename timeunit>
+    void Map<number,timeunit>::apply(const Space<number,timeunit>& space, Space<number,timeunit>& result) const {
         multiply(*this, space, result);
     }
 
-    template <typename number>
-    void Map<number>::apply(const IVector<number>& vec, TimeVector<number>& result) const {
+    template <typename number,typename timeunit>
+    void Map<number,timeunit>::apply(const IVector<number,timeunit>& vec, TimeVector<number,timeunit>& result) const {
         multiply(*this, vec, result);
     }
 
-    template <typename number>
-    void Map<number>::getDomainImgTimeDiffs(std::vector<std::pair<tstep,tstep>>& intervals) const {
-        assert(Matrix<number>::isReducedForm());
+    template <typename number,typename timeunit>
+    void Map<number,timeunit>::getDomainImgTimeDiffs(std::vector<std::pair<timeunit,timeunit>>& intervals) const {
+        assert(isReducedForm());
 
-        const int rows = Matrix<number>::rows();
-        const int cols = Matrix<number>::cols();
+        const int rows = Matrix<number,timeunit>::rows();
+        const int cols = Matrix<number,timeunit>::cols();
 
         if (!intervals.empty()) { intervals.clear(); }
 
         intervals.reserve(rows);
         for (int rowN = 0; rowN < rows; rowN++) {
-            intervals.push_back({ Matrix<number>::getRowTime(rowN), tstep::INF });
+            intervals.push_back({ Matrix<number,timeunit>::getRowTime(rowN), tstep::INF });
         }
 
         for (int colN = 0; colN < cols; colN++) {
-            const int killedN = Matrix<number>::operator [](colN).pivotDim();
-            intervals[killedN].second = Matrix<number>::getColTime(colN);
+            const int killedN = Matrix<number,timeunit>::operator [](colN).pivotDim();
+            intervals[killedN].second = Matrix<number,timeunit>::getColTime(colN);
         }
     }
 
-    template <typename number>
-    void Map<number>::find(const Space<number>& domain, Map<number>& map, const Space<number>& image) {
+    template <typename number,typename timeunit>
+    void Map<number,timeunit>::find(const Space<number,timeunit>& domain, Map<number,timeunit>& map, const Space<number,timeunit>& image) {
         solve(domain, map, image);
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const Map<number>& map) {
-        return os << static_cast<Matrix<number>>(map);
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const Map<number,timeunit>& map) {
+        return os << static_cast<Matrix<number,timeunit>>(map);
     }
 
-    template <typename number>
-    Module<number>::Module(const Map<number>& boundry) {
+    template <typename number,typename timeunit>
+    Module<number,timeunit>::Module(const Map<number,timeunit>& boundry) {
         boundry.decompose(generators, relations);
-        Map<number>::find(generators, map, relations);
+        Map<number,timeunit>::find(generators, map, relations);
     }
 
-    template <typename number>
-    void Module<number>::getBarcode(std::vector<std::pair<tstep,tstep>>& barcode) const {
+    template <typename number,typename timeunit>
+    void Module<number,timeunit>::getBarcode(std::vector<std::pair<timeunit,timeunit>>& barcode) const {
         map.getDomainImgTimeDiffs(barcode);
     }
 }

@@ -8,13 +8,13 @@ namespace la {
 
     ////////////////////////////////////////////
     /// Sparse vector
-    template <typename number>
-    Vector<number>::Vector(const int& _dim):
+    template <typename number,typename timeunit>
+    Vector<number,timeunit>::Vector(const int& _dim):
         vect(),
         dimension(_dim) {}
 
-    template <typename number>
-    Vector<number>::Vector(std::initializer_list<number> values):
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>::Vector(std::initializer_list<number> values):
             vect(),
             dimension(values.size()) {
 
@@ -28,8 +28,8 @@ namespace la {
         }
     }
 
-    template <typename number>
-    Vector<number>::Vector(const int& dim, const SparseEntry& entry):
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>::Vector(const int& dim, const SparseEntry& entry):
             vect(),
             dimension(dim) {
         assert(0 <= entry.first && entry.first < dim);
@@ -39,26 +39,26 @@ namespace la {
         }
     }
 
-    template <typename number>
-    Vector<number>::Vector(const Vec& other):
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>::Vector(const Vec& other):
             vect(other.vect),
             dimension(other.dimension) {}
 
-    template <typename number>
-    Vector<number>& Vector<number>::operator =(const Vec& other) {
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>& Vector<number,timeunit>::operator =(const Vec& other) {
         // strong guarantee (no data should be changed in case of exception)
         Vec temp(other);
         std::swap(*this, temp);
         return *this;
     }
 
-    template <typename number>
-    Vector<number>::Vector(Vec&& other):
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>::Vector(Vec&& other):
         vect(std::move(other.vect)),
         dimension(other.dimension) {}
 
-    template <typename number>
-    Vector<number>& Vector<number>::operator =(Vec&& other) {
+    template <typename number, typename timeunit>
+    Vector<number,timeunit>& Vector<number,timeunit>::operator =(Vec&& other) {
         if (this != &other) {
             std::swap(vect, other.vect);
             dimension = other.dimension;
@@ -66,8 +66,8 @@ namespace la {
         return *this;
     }
 
-    template <typename number>
-    bool Vector<number>::operator ==(const Vec& other) const {
+    template <typename number, typename timeunit>
+    bool Vector<number,timeunit>::operator ==(const Vec& other) const {
         if (dim() != other.dim()) { return false; }
         if (vect.size() != other.vect.size()) { return false; }
         for (size_t val_n = 0; val_n < vect.size(); val_n++) {
@@ -76,39 +76,39 @@ namespace la {
         return true;
     }
 
-    template <typename number>
-    bool Vector<number>::operator !=(const Vec& other) const {
+    template <typename number, typename timeunit>
+    bool Vector<number,timeunit>::operator !=(const Vec& other) const {
         return !(*this == other);
     }
 
-    template <typename number>
-    void Vector<number>::resize(const int& dim) {
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::resize(const int& dim) {
         *this = Vec(dim);
     }
 
-    template <typename number>
-    void Vector<number>::makeZero() {
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::makeZero() {
         vect.clear();
     }
 
-    template <typename number>
-    bool Vector<number>::isZero() const {
+    template <typename number, typename timeunit>
+    bool Vector<number,timeunit>::isZero() const {
         return vect.empty();
     }
 
-    template <typename number>
-    int Vector<number>::pivotDim() const {
+    template <typename number, typename timeunit>
+    int Vector<number,timeunit>::pivotDim() const {
         return isZero() ? -1 : vect.back().first;
     }
 
-    template <typename number>
-    number Vector<number>::pivot() const {
+    template <typename number, typename timeunit>
+    number Vector<number,timeunit>::pivot() const {
         assert(!isZero());
         return vect.back().second;
     }
 
-    template <typename number>
-    number Vector<number>::operator [](const int& i) const {
+    template <typename number, typename timeunit>
+    number Vector<number,timeunit>::operator [](const int& i) const {
         assert(0 <= i && i < dim());
 
         const auto cmp = [](const SparseEntry& el, const int& row_n) { return el.first < row_n; };
@@ -118,8 +118,8 @@ namespace la {
         return el_ptr->second;
     }
 
-    template <typename number>
-    number Vector<number>::operator *(const Vec& other) const {
+    template <typename number, typename timeunit>
+    number Vector<number,timeunit>::operator *(const Vec& other) const {
         assert(dim() == other.dim());
 
         const vector& vect_a = vect;
@@ -147,8 +147,8 @@ namespace la {
         return result;
     }
 
-    template <typename number>
-    void Vector<number>::add(const Vec& b, Vec& result) const {
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::add(const Vec& b, Vec& result) const {
         assert(dim() == b.dim());
 
         // dimension
@@ -197,8 +197,8 @@ namespace la {
         }
     }
 
-    template <typename number>
-    void Vector<number>::add(const Vec& b, const number& k, Vec& result) const {
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::add(const Vec& b, const number& k, Vec& result) const {
         assert(dim() == b.dim());
 
         result.dimension = dim();
@@ -246,41 +246,41 @@ namespace la {
         }
     }
 
-    template <typename number>
-    void Vector<number>::addMultiple(const Vec& vec, const number& k) {
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::addMultiple(const Vec& vec, const number& k) {
         Vec result(dim()); add(vec, k, result);
         std::swap(*this, result);
     }
 
-    template <typename number>
-    Vector<number> operator +(const Vector<number>& v1, const Vector<number>& v2) {
-        Vector<number> result {v1.dim()};  v1.add(v2, result);
+    template <typename number, typename timeunit>
+    Vector<number,timeunit> operator +(const Vector<number,timeunit>& v1, const Vector<number,timeunit>& v2) {
+        Vector<number,timeunit> result {v1.dim()};  v1.add(v2, result);
         return result;
     }
 
     ////////////////////////////////////////////
     /// Matrix Entry
-    template <typename number>
-    constexpr MatrixEntry<number>::MatrixEntry(const number& _val, const tstep& _tm):
+    template <typename number,typename timeunit>
+    constexpr MatrixEntry<number,timeunit>::MatrixEntry(const number& _val, const timeunit& _tm):
         val(_val),
         tm(_tm) {}
 
-    template <typename number>
-    constexpr MatrixEntry<number>::MatrixEntry(const int& _val): val(_val) {}
+    template <typename number,typename timeunit>
+    constexpr MatrixEntry<number,timeunit>::MatrixEntry(const int& _val): val(_val) {}
 
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>& entry1, const MatrixEntry<number>& entry2) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>& entry1, const MatrixEntry<number,timeunit>& entry2) {
         return entry1.value() == entry2.value() &&
                entry1.time() == entry2.time();
     }
 
-    template <typename number>
-    constexpr bool operator !=(const MatrixEntry<number>& entry1, const MatrixEntry<number>& entry2) {
+    template <typename number,typename timeunit>
+    constexpr bool operator !=(const MatrixEntry<number,timeunit>& entry1, const MatrixEntry<number,timeunit>& entry2) {
         return !(entry1 == entry2);
     }
 
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>& entry, const number& num) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>& entry, const number& num) {
         return entry.value() == num &&
                (
                    num == 0 ||
@@ -288,28 +288,28 @@ namespace la {
                );
     }
 
-    template <typename number>
-    constexpr bool operator ==(const MatrixEntry<number>& entry, const std::pair<number,tstep>& pr) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const MatrixEntry<number,timeunit>& entry, const std::pair<number,timeunit>& pr) {
         return entry.value() == pr.first && entry.time() == pr.second;
     }
 
-    template <typename number>
-    constexpr bool operator ==(const number& num, const MatrixEntry<number>& entry) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const number& num, const MatrixEntry<number,timeunit>& entry) {
         return entry == num;
     }
 
-    template <typename number>
-    constexpr bool operator ==(const int& num, const MatrixEntry<number>& entry) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const int& num, const MatrixEntry<number,timeunit>& entry) {
         return entry == number(num);
     }
 
-    template <typename number>
-    constexpr bool operator ==(const std::pair<number,tstep>& pr, const MatrixEntry<number>& entry) {
+    template <typename number,typename timeunit>
+    constexpr bool operator ==(const std::pair<number,timeunit>& pr, const MatrixEntry<number,timeunit>& entry) {
         return entry == pr;
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const MatrixEntry<number>& entry) {
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const MatrixEntry<number,timeunit>& entry) {
         os << entry.value();
         if (entry.value() != 0) {
             os << entry.time();
@@ -319,22 +319,22 @@ namespace la {
 
     ////////////////////////////////////////////
     /// Vector Interface
-    template <typename number>
-    MatrixEntry<number> IVector<number>::operator [](const int& valN) const {
-        const Vector<number>& vec = getVector();
+    template <typename number,typename timeunit>
+    MatrixEntry<number,timeunit> IVector<number,timeunit>::operator [](const int& valN) const {
+        const Vector<number,timeunit>& vec = getVector();
         return { vec[valN], getTime(valN) };
     }
 
-    template <typename number>
-    tstep IVector<number>::getTime(const int& valN) const {
+    template <typename number,typename timeunit>
+    timeunit IVector<number,timeunit>::getTime(const int& valN) const {
         return getTimeStep() - getSimplexTimes()[valN];
     }
 
     ////////////////////////////////////////////
     /// Vector wrapper
-    template <typename number>
-    VectorWrapper<number>::VectorWrapper(const Vec& _vec, const std::vector<tstep>& _simplex_times,
-            const tstep& _vector_time):
+    template <typename number,typename timeunit>
+    VectorWrapper<number,timeunit>::VectorWrapper(const Vec& _vec, const std::vector<timeunit>& _simplex_times,
+            const timeunit& _vector_time):
         vec(_vec),
         simplex_times(_simplex_times),
         vector_time(_vector_time) {}
@@ -342,70 +342,70 @@ namespace la {
 
     ////////////////////////////////////////////
     /// Vector with time
-    template <typename number>
-    TimeVector<number>::TimeVector(const int& dim):
+    template <typename number,typename timeunit>
+    TimeVector<number,timeunit>::TimeVector(const int& dim):
             vec(dim),
             simplex_times(dim, 0),
             vector_time(0) {}
  
-    template <typename number>
-    TimeVector<number>::TimeVector(const Vec& _vec, const tstep& _vector_time):
+    template <typename number,typename timeunit>
+    TimeVector<number,timeunit>::TimeVector(const Vec& _vec, const timeunit& _vector_time):
         vec(_vec),
         simplex_times(_vec.dim(),0),
         vector_time(_vector_time) {}
 
 
-    template <typename number>
-    TimeVector<number>::TimeVector(const Vec& _vec, const std::vector<tstep>& _simplex_times,
-            const tstep& _vector_time):
+    template <typename number,typename timeunit>
+    TimeVector<number,timeunit>::TimeVector(const Vec& _vec, const std::vector<timeunit>& _simplex_times,
+            const timeunit& _vector_time):
         vec(_vec),
         simplex_times(_simplex_times),
         vector_time(_vector_time) {}
 
-    template <typename number>
-    void TimeVector<number>::resize(const int& dim, const std::vector<tstep>& _simplex_times,
-            const tstep& _vector_time) {
+    template <typename number,typename timeunit>
+    void TimeVector<number,timeunit>::resize(const int& dim, const std::vector<timeunit>& _simplex_times,
+            const timeunit& _vector_time) {
         assert(_simplex_times.size() == size_t(dim));
         vec.resize(dim);
         simplex_times = _simplex_times;
         vector_time = _vector_time;
     }
 
-    template <typename number>
-    void TimeVector<number>::makeZero() {
+    template <typename number,typename timeunit>
+    void TimeVector<number,timeunit>::makeZero() {
         vec.makeZero();
     }
 
-    template <typename number>
-    bool operator ==(const IVector<number>& a, const IVector<number>& b) {
+    template <typename number,typename timeunit>
+    bool operator ==(const IVector<number,timeunit>& a, const IVector<number,timeunit>& b) {
         return a.getVector() == b.getVector() &&
                a.getSimplexTimes() == b.getSimplexTimes() &&
                a.getTimeStep() == b.getTimeStep();
     }
 
-    template <typename number>
-    bool operator !=(const IVector<number>& a, const IVector<number>& b) {
+    template <typename number,typename timeunit>
+    bool operator !=(const IVector<number,timeunit>& a, const IVector<number,timeunit>& b) {
         return !(a == b);
     }
 
 
     ////////////////////////////////////////////
     /// Sparse matrix
-    template <typename number>
-    Matrix<number>::Matrix(const int& row_dim, const int& col_dim):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(const int& row_dim, const int& col_dim):
             mat(col_dim, Vec(row_dim)),
             row_times(row_dim, 0),
             col_times(col_dim, 0) {}
 
-    template <typename number>
-    Matrix<number>::Matrix(const int& row_dim, const int& col_dim,
-                const std::vector<tstep>& _row_times, const std::vector<tstep>& _col_times):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(const int& row_dim, const int& col_dim,
+                const std::vector<timeunit>& _row_times, const std::vector<timeunit>& _col_times):
             mat(col_dim, Vec(row_dim)),
             row_times(_row_times),
             col_times(_col_times) {}
 
-    template <typename number>
-    Matrix<number>::Matrix(std::initializer_list<std::vector<number>> rows):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(std::initializer_list<std::vector<number>> rows):
             mat(rows.size() > 0 ? rows.begin()->size() : 0, Vec(rows.size())),
             row_times(rows.size(), 0),
             col_times(rows.size() > 0 ? rows.begin()->size() : 0, 0) {
@@ -425,9 +425,9 @@ namespace la {
         }
     }
 
-    template <typename number>
-    Matrix<number>::Matrix(std::initializer_list<std::vector<number>> input,
-                const std::vector<tstep>& _row_times, const std::vector<tstep>& _col_times):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(std::initializer_list<std::vector<number>> input,
+                const std::vector<timeunit>& _row_times, const std::vector<timeunit>& _col_times):
             mat(input.size() > 0 ? input.begin()->size() : 0, Vec(input.size())),
             row_times(_row_times),
             col_times(_col_times) {
@@ -464,33 +464,33 @@ namespace la {
 #endif
     }
 
-    template <typename number>
+    template <typename number,typename timeunit>
     template <typename... Vecs>
-    Matrix<number>::Matrix(const Vec& first, Vecs const&... vects):
-        Matrix<number>(sizeof...(vects)+1, first, vects...) {}
+    Matrix<number,timeunit>::Matrix(const Vec& first, Vecs const&... vects):
+        Matrix<number,timeunit>(sizeof...(vects)+1, first, vects...) {}
 
-    template <typename number>
-    Matrix<number>::Matrix(const Mat& other):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(const Mat& other):
         mat(other.mat),
         row_times(other.row_times),
         col_times(other.col_times) {}
 
-    template <typename number>
-    Matrix<number>& Matrix<number>::operator =(const Mat& other) {
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>& Matrix<number,timeunit>::operator =(const Mat& other) {
         // provide the strong guarantee (no data should be changed in case of exception)
         Mat temp(other);
         std::swap(*this, temp);
         return *this;
     }
 
-    template <typename number>
-    Matrix<number>::Matrix(Mat&& other):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(Mat&& other):
         mat(std::move(other.mat)),
         row_times(std::move(other.row_times)),
         col_times(std::move(other.col_times)) {}
 
-    template <typename number>
-    Matrix<number>& Matrix<number>::operator =(Mat&& other) {
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>& Matrix<number,timeunit>::operator =(Mat&& other) {
         if (this != &other) {
             std::swap(mat, other.mat);
             std::swap(row_times, other.row_times);
@@ -499,8 +499,8 @@ namespace la {
         return *this;
     }
 
-    template <typename number>
-    bool Matrix<number>::operator ==(const Mat& other) const {
+    template <typename number,typename timeunit>
+    bool Matrix<number,timeunit>::operator ==(const Mat& other) const {
         if (rows() != other.rows() || cols() != other.cols()) { return false; }
         for (int col_n = 0; col_n < cols(); col_n++) {
             if (mat[col_n] != other.mat[col_n]) { return false; }
@@ -508,53 +508,53 @@ namespace la {
         return row_times == other.row_times && col_times == other.col_times;
     }
 
-    template <typename number>
-    bool Matrix<number>::operator !=(const Mat& other) const {
+    template <typename number,typename timeunit>
+    bool Matrix<number,timeunit>::operator !=(const Mat& other) const {
         return !(*this == other);
     }
 
-    template <typename number>
-    typename Matrix<number>::Entry Matrix<number>::operator () (const int& rowN, const int& colN) const {
+    template <typename number,typename timeunit>
+    typename Matrix<number,timeunit>::Entry Matrix<number,timeunit>::operator () (const int& rowN, const int& colN) const {
         assert(0 <= rowN && rowN < rows());
         assert(0 <= colN && colN < cols());
         return { mat[colN][rowN], getEntryTime(rowN, colN) };
     }
 
-    template <typename number>
-    tstep Matrix<number>::getColTime(const int& colN) const {
+    template <typename number,typename timeunit>
+    timeunit Matrix<number,timeunit>::getColTime(const int& colN) const {
         assert(0 <= colN && colN < cols());
         return col_times[colN];
     }
 
-    template <typename number>
-    tstep Matrix<number>::getRowTime(const int& rowN) const {
+    template <typename number,typename timeunit>
+    timeunit Matrix<number,timeunit>::getRowTime(const int& rowN) const {
         assert(0 <= rowN && rowN < rows());
         return row_times[rowN];
     }
 
-    template <typename number>
-    tstep Matrix<number>::getEntryTime(const int& rowN, const int& colN) const {
+    template <typename number,typename timeunit>
+    timeunit Matrix<number,timeunit>::getEntryTime(const int& rowN, const int& colN) const {
         return getColTime(colN) - getRowTime(rowN);
     }
 
-    template <typename number>
-    VectorWrapper<number> Matrix<number>::operator [](const int& colN) const {
+    template <typename number,typename timeunit>
+    VectorWrapper<number,timeunit> Matrix<number,timeunit>::operator [](const int& colN) const {
         assert(0 <= colN && colN < cols());
-        return VectorWrapper<number>(mat[colN], row_times, col_times[colN]);
+        return VectorWrapper<number,timeunit>(mat[colN], row_times, col_times[colN]);
     }
 
-    template <typename number>
-    int Matrix<number>::rows() const {
+    template <typename number,typename timeunit>
+    int Matrix<number,timeunit>::rows() const {
         return row_times.size();
     }
 
-    template <typename number>
-    int Matrix<number>::cols() const {
+    template <typename number,typename timeunit>
+    int Matrix<number,timeunit>::cols() const {
         return col_times.size();
     }
 
-    template <typename number>
-    bool Matrix<number>::isReducedForm() const {
+    template <typename number,typename timeunit>
+    bool Matrix<number,timeunit>::isReducedForm() const {
         std::vector<bool> pivot_rows(rows(), false);
 
         const int col_dim = cols();
@@ -568,20 +568,20 @@ namespace la {
         return true;
     }
 
-    template <typename number>
-    void Matrix<number>::resize(const int& rows, const int& cols) {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::resize(const int& rows, const int& cols) {
         *this = Mat(rows, cols);
     }
 
-    template <typename number>
-    void Matrix<number>::resize(const int& rows, const int& cols,
-            const std::vector<tstep>& _row_times, const std::vector<tstep>& _col_times) {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::resize(const int& rows, const int& cols,
+            const std::vector<timeunit>& _row_times, const std::vector<timeunit>& _col_times) {
         *this = Mat(rows, cols, _row_times, _col_times);
     }
 
 
-    template <typename number>
-    void Matrix<number>::make_identity(const int& dim) {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::make_identity(const int& dim) {
         mat.clear();
         mat.reserve(dim);
 
@@ -592,12 +592,12 @@ namespace la {
         row_times.resize(dim);
         col_times.resize(dim);
 
-        for (tstep& step : row_times) { step = 0; }
-        for (tstep& step : col_times) { step = 0; }
+        for (timeunit& step : row_times) { step = 0; }
+        for (timeunit& step : col_times) { step = 0; }
     }
 
-    template <typename number>
-    void Matrix<number>::reduce() {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::reduce() {
         const int col_dim = cols();
         for (int colN = 0; colN < col_dim; colN++) {
             Vec& curr_col = mat[colN];
@@ -619,8 +619,8 @@ namespace la {
         }
     }
 
-    template <typename number>
-    void Matrix<number>::multiply(const Mat& B, Mat& C) const {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::multiply(const Mat& B, Mat& C) const {
         assert(cols() == B.rows());
 
         const int out_rows = rows();
@@ -645,15 +645,15 @@ namespace la {
         }
     }
 
-    template <typename number>
-    void Matrix<number>::multiply(const IVector<number>& vec, TmVector& result) const {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::multiply(const IVector<number,timeunit>& vec, TmVector& result) const {
         assert(vec.dim() == cols());
         assert(rows() == result.dim());
 
         result.resize(rows(), row_times, vec.getTimeStep());
 
-        const Vector<number>& internal_vec = vec.getVector();
-        Vector<number>& result_vec = result.getVector();
+        const Vector<number,timeunit>& internal_vec = vec.getVector();
+        Vector<number,timeunit>& result_vec = result.getVector();
 
         // construct the result as a linear combination of the (column) vectors
         // in this matrix. Use only the vectors with corresponding non-zero
@@ -664,8 +664,8 @@ namespace la {
         }
     }
 
-    template <typename number>
-    void Matrix<number>::decompose(Mat& kernel, Mat& image) const {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::decompose(Mat& kernel, Mat& image) const {
         const int col_dim = cols();
         // copy the rows of this matrix into the image and perform gaussian elimination
         image = *this;
@@ -721,7 +721,7 @@ namespace la {
         // first do the column times
         int vecN = 0;
         const auto last_times = std::remove_if(image.col_times.begin(), image.col_times.end(),
-                [&](const tstep&) { return im[vecN++].isZero(); });
+                [&](const timeunit&) { return im[vecN++].isZero(); });
         const auto last = std::remove_if(im.begin(), im.end(),
                 [](const Vec& vec) { return vec.isZero(); });
 
@@ -729,8 +729,8 @@ namespace la {
         im.erase(last, im.end());
     }
 
-    template <typename number>
-    void Matrix<number>::solve(const Mat& B, Mat& X) const {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::solve(const Mat& B, Mat& X) const {
         assert(isReducedForm());
         assert(row_times == B.row_times);
 
@@ -773,24 +773,24 @@ namespace la {
         }
     }
 
-    template <typename number>
+    template <typename number,typename timeunit>
     template <typename... Vecs>
-    Matrix<number>::Matrix(const int& vec_count, const Vec& vec, Vecs const&... vects):
+    Matrix<number,timeunit>::Matrix(const int& vec_count, const Vec& vec, Vecs const&... vects):
             Mat(vec_count, vects...) {
 
         mat[vec_count - 1 - sizeof...(vects)] = std::move(vec);
     }
 
-    template <typename number>
-    Matrix<number>::Matrix(const int& total_vecs, const Vec& vec):
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit>::Matrix(const int& total_vecs, const Vec& vec):
             mat(total_vecs, Vec(vec.dim())),
             row_times(vec.dim(), 0),
             col_times(total_vecs, 0) {
         mat.back() = std::move(vec);
     }
 
-    template <typename number>
-    void Matrix<number>::transpose(SparseMatrix& transposed) const {
+    template <typename number,typename timeunit>
+    void Matrix<number,timeunit>::transpose(SparseMatrix& transposed) const {
         transposed.clear();
         transposed.resize(rows(), Vec(cols()));
 
@@ -804,36 +804,36 @@ namespace la {
         }
     }
 
-    template <typename number>
-    Matrix<number> operator *(const Matrix<number>& A, const Matrix<number>& B) {
-        Matrix<number> C;   A.multiply(B, C);
+    template <typename number,typename timeunit>
+    Matrix<number,timeunit> operator *(const Matrix<number,timeunit>& A, const Matrix<number,timeunit>& B) {
+        Matrix<number,timeunit> C;   A.multiply(B, C);
         return C;
     }
 
-    template <typename number>
-    TimeVector<number> operator *(const Matrix<number>& A, const IVector<number>& b) {
-        TimeVector<number> result(A.rows());
+    template <typename number,typename timeunit>
+    TimeVector<number,timeunit> operator *(const Matrix<number,timeunit>& A, const IVector<number,timeunit>& b) {
+        TimeVector<number,timeunit> result(A.rows());
         multiply(A, b, result);
         return result;
     }
 
-    template <typename number>
-    void multiply(const Matrix<number>& A, const Matrix<number>& B, Matrix<number>& C) {
+    template <typename number,typename timeunit>
+    void multiply(const Matrix<number,timeunit>& A, const Matrix<number,timeunit>& B, Matrix<number,timeunit>& C) {
         A.multiply(B, C);
     }
 
-    template <typename number>
-    void multiply(const Matrix<number>& A, const IVector<number>& x, TimeVector<number>& y) {
+    template <typename number,typename timeunit>
+    void multiply(const Matrix<number,timeunit>& A, const IVector<number,timeunit>& x, TimeVector<number,timeunit>& y) {
         A.multiply(x, y);
     }
 
-    template <typename number>
-    void solve(const Matrix<number>& A, Matrix<number>& X, const Matrix<number>& B) {
+    template <typename number,typename timeunit>
+    void solve(const Matrix<number,timeunit>& A, Matrix<number,timeunit>& X, const Matrix<number,timeunit>& B) {
         A.solve(B, X);
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const Vector<number>& vec) {
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const Vector<number,timeunit>& vec) {
         const int dim = vec.dim();
         for (int i = 0; i < dim; i++) {
             os << vec[i];
@@ -844,8 +844,8 @@ namespace la {
         return os;
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const TimeVector<number>& vec) {
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const TimeVector<number,timeunit>& vec) {
         const int dim = vec.dim();
         os << "[ ";
         for (int valN = 0; valN < dim; valN++) {
@@ -856,8 +856,8 @@ namespace la {
         return os;
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const VectorWrapper<number>& vec) {
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const VectorWrapper<number,timeunit>& vec) {
         const int dim = vec.dim();
         os << "[ ";
         for (int valN = 0; valN < dim; valN++) {
@@ -868,14 +868,14 @@ namespace la {
         return os;
     }
 
-    template <typename number>
-    std::ostream& operator <<(std::ostream& os, const Matrix<number>& mat) {
+    template <typename number,typename timeunit>
+    std::ostream& operator <<(std::ostream& os, const Matrix<number,timeunit>& mat) {
         const int rows = mat.rows();
         const int cols = mat.cols();
         for (int row_n = 0; row_n < rows; row_n++) {
             os << '\n';
             for (int col_n = 0; col_n < cols; col_n++) {
-                const MatrixEntry<number> val = mat(row_n, col_n);
+                const MatrixEntry<number,timeunit> val = mat(row_n, col_n);
                 os << val;
                 if (col_n < cols-1) { os << ",\t"; }
             }

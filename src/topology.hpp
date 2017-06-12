@@ -88,7 +88,6 @@ namespace top{
 		}
 		for(int i = 0; i<=dim;++i){
 			if((*this)[i]!=other[i]){
-				std::cerr<<i<<"  "<<(*this)[i]<<"  "<<other[i]<<std::endl;
 			    return (*this)[i]<other[i];
 			}
 
@@ -120,6 +119,11 @@ namespace top{
 
 		return vertex_list[index];
 	}
+
+
+
+ 
+
 
 	template<typename indextype>
 	Simplex<indextype> Simplex<indextype>::erase(const int& index) const {
@@ -154,8 +158,8 @@ namespace top{
 
 
 // change this to 0 but reserve the size
-   template<typename time,typename indextype>
-   Complex<time,indextype>::Complex(const int& num_simp):
+   template<typename timeunit,typename indextype>
+   Complex<timeunit,indextype>::Complex(const int& num_simp):
  	data(),
  	num_simplices(num_simp),
 	finalized(false),
@@ -163,8 +167,8 @@ namespace top{
 	 
    
 	
-   template<typename time,typename indextype>
-	Complex<time,indextype>::Complex(std::initializer_list<std::pair<std::vector<indextype>,time>> simplices):
+   template<typename timeunit,typename indextype>
+	Complex<timeunit,indextype>::Complex(std::initializer_list<std::pair<std::vector<indextype>,timeunit>> simplices):
         data(),
  	num_simplices(),
 	finalized(false),
@@ -184,14 +188,14 @@ namespace top{
 
 	//TODO add copy/move, a complex with empty 
 
-   template<typename time,typename indextype>   
-   void Complex<time,indextype>::insert(const Simplex<indextype>& simp,const time& t){
+   template<typename timeunit,typename indextype>   
+   void Complex<timeunit,indextype>::insert(const Simplex<indextype>& simp,const timeunit& t){
    	data.push_back(entry(simp,t));
 	num_simplices++;
    }
 
-   template<typename time,typename indextype>
-   void Complex<time,indextype>::finalize(){
+   template<typename timeunit,typename indextype>
+   void Complex<timeunit,indextype>::finalize(){
    	struct filt_order
 	{
 	    inline bool operator() (const entry& a, const entry& b)
@@ -203,7 +207,6 @@ namespace top{
 	    }
 	};
 
-
 	std::sort(data.begin(),data.end(),filt_order());
 
 
@@ -213,29 +216,29 @@ namespace top{
 	auto end_it = std::unique(data.begin(),data.end());
 	num_simplices =  end_it - data.begin();
 
-
 	for(int i=0;i<num_simplices;++i){
 		reverse_map.insert(std::make_pair(std::cref(data[i].first),i));
 
 	}
+
    	finalized=true;
    }
    
-   template<typename time, typename indextype>
-   bool Complex<time,indextype>::is_finalized() const{
+   template<typename timeunit, typename indextype>
+   bool Complex<timeunit,indextype>::is_finalized() const{
    	return finalized;
    }
    
  
-   template<typename time, typename indextype>
-   bool Complex<time,indextype>::is_defined(const Simplex<indextype>& simp) const{
+   template<typename timeunit, typename indextype>
+   bool Complex<timeunit,indextype>::is_defined(const Simplex<indextype>& simp) const{
    	return !(reverse_map.find(simp)==reverse_map.end());
    }
    
-   template<typename time,typename indextype> 
-   bool Complex<time,indextype>::verify() const{
-  // 	if(is_finalized()) 
-//		return false;
+   template<typename timeunit,typename indextype> 
+   bool Complex<timeunit,indextype>::verify() const{
+ 	if(!is_finalized()) 
+		return false;
 
    	for(int i = 0;i<num_simplices;++i){
 		int dim = data[i].first.dim();
@@ -250,29 +253,60 @@ namespace top{
    }
 
 
-   template<typename time,typename indextype> 
-   time Complex<time,indextype>::getTime(const int& index) const {
+   template<typename timeunit,typename indextype> 
+   timeunit Complex<timeunit,indextype>::getTime(const int& index) const {
    	return data.at(index).second;
    }
 
 
-   template<typename time,typename indextype> 
-   time Complex<time,indextype>::getTime(const Simplex<indextype>& simp) const {
+   template<typename timeunit,typename indextype> 
+   timeunit Complex<timeunit,indextype>::getTime(const Simplex<indextype>& simp) const {
    	return data[reverse_map.at(simp)].second;
    }
 
-   template<typename time,typename indextype> 
-   int Complex<time,indextype>::getIndex(const Simplex<indextype>& simp) const {
+   template<typename timeunit,typename indextype> 
+   int Complex<timeunit,indextype>::getIndex(const Simplex<indextype>& simp) const {
    	return reverse_map.at(simp);
    }
 
-  template<typename time, typename indextype>
-   const Simplex<indextype>& Complex<time,indextype>::operator [](const int& index) const{ 
+ 
+   template<typename timeunit, typename indextype>
+   const Simplex<indextype>& Complex<timeunit,indextype>::operator [](const int& index) const{ 
 	 assert(0 <= index && index< this->num_simplices);
 	return data[index].first;
-   }
- 
+   } 	
+
+ template<typename number, typename timeunit, typename indextype>
+   strct::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C){
+        assert(C.is_finalized());
+        assert(C.verify());
+	int complex_size = C.size();
+	strct::Map<number,timeunit> D(complex_size,complex_size);
+	for(auto i = 0; i< complex_size;++i){
+		la::Vector<number,timeunit> chain(complex_size);
+		number coeff = -1;
+		const number neg = -1;
+
+
+		if(C[i].dim()>0){
+			for(auto j=0; j<=C[i].dim(); ++j){
+		    		const Simplex<indextype> s =  C[i].erase(j);
+				int indx = C.getIndex(s); 
+		        	chain.pushBack(indx,coeff);
+		                coeff=coeff*neg;	   
+			}
+		}
+		timeunit t = C.getTime(i);
+		chain.sort();
+		D.lazyInsert(chain,t,i);
 	
+    	}
+	D.copyTimes();
+
+	return D;
+   }
+
+
 
 
 }

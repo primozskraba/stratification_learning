@@ -46,6 +46,7 @@ namespace ts {
     constexpr bool operator ==(const int&, const tstep&);
 
     std::ostream& operator <<(std::ostream& os, const tstep& ts);
+    
 }
 
 #include "tstep.hpp"
