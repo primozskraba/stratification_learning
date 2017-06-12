@@ -147,6 +147,12 @@ namespace top{
     std::ostream& operator <<(std::ostream&, const Simplex<indextype>&);
 
 
+    template<typename number, typename timeunit, typename indextype>
+    strct::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B);
+
+
+
+    
 }
 
 #include "topology.hpp"

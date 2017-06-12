@@ -40,9 +40,9 @@ namespace la {
         Vector(const int& dim, const SparseEntry&);
 
 
-	void pushBack(int i,number x){
-		vect.push_back(SparseEntry(i,x));	
-	}
+	void pushBack(int i,number x){vect.push_back(SparseEntry(i,x));	}
+
+	// move to hpp
 	void sort(){
 		struct entrySort{
 			bool operator()(const SparseEntry& x, const SparseEntry&y) const{
@@ -96,6 +96,7 @@ namespace la {
         void add(const Vec&, const number& k, Vec&) const;
         /// this <- this + k*vec
         void addMultiple(const Vec& vec, const number& k);
+
     };
 
     // non-member functions
@@ -364,6 +365,11 @@ namespace la {
 
         /// solves the system A*X = B
         void solve(const Mat& B, Mat& X) const;
+
+
+	/// for relative homology we have to be able to zero out 
+	// rows
+	void zeroRows(std::vector<int> &);	
 
     private:
         // helper constructors

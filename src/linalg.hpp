@@ -804,6 +804,21 @@ namespace la {
         }
     }
 
+
+    // TODO - double check this implementation
+    //
+    /*
+   template<typename number,typename timeunit>
+    void Matrix<number,timeunit>::zeroRows(std::vector<int> &z){
+   	for(auto& x : mat){
+		for(auto ind : z ){
+		
+		}	
+	}
+    }
+*/
+
+
     template <typename number,typename timeunit>
     Matrix<number,timeunit> operator *(const Matrix<number,timeunit>& A, const Matrix<number,timeunit>& B) {
         Matrix<number,timeunit> C;   A.multiply(B, C);

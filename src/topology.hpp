@@ -305,6 +305,44 @@ namespace top{
 
 	return D;
    }
+/*
+ template<typename number, typename timeunit, typename indextype>
+    strct::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B}{
+	assert(C_A.is_finalized());
+        assert(C_A.verify());
+	assert(C_B.is_finalized());
+        assert(C_B.verify());
+
+	int complex_size = C_A.size() + C_B.size();
+
+	strct::Map<number,timeunit> D(complex_size,complex_size);
+	for(auto i = 0; i< complex_size;++i){
+		la::Vector<number,timeunit> chain(complex_size);
+		number coeff = -1;
+		const number neg = -1;
+
+
+		if(C[i].dim()>0){
+			for(auto j=0; j<=C[i].dim(); ++j){
+		    		const Simplex<indextype> s =  C[i].erase(j);
+				int indx = C.getIndex(s); 
+		        	chain.pushBack(indx,coeff);
+		                coeff=coeff*neg;	   
+			}
+		}
+		timeunit t = C.getTime(i);
+		chain.sort();
+		D.lazyInsert(chain,t,i);
+	
+    	}
+	D.copyTimes();
+
+	return D;
+
+
+	    
+  }*/
+		    
 
 
 
