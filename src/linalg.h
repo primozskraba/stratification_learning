@@ -31,28 +31,28 @@ namespace la {
         vector vect;
         int dimension;
     public:
-     	using iterator = typename vector::iterator;
+        using iterator = typename vector::iterator;
 
-     	explicit Vector(const int& dim);
+        explicit Vector(const int& dim);
 
         Vector(std::initializer_list<number>);
         /// constructs a vector with a single non-zero entry
         Vector(const int& dim, const SparseEntry&);
 
 
-	void pushBack(int i,number x){vect.push_back(SparseEntry(i,x));	}
+    void pushBack(int i,number x){vect.push_back(SparseEntry(i,x)); }
 
-	// move to hpp
-	void sort(){
-		struct entrySort{
-			bool operator()(const SparseEntry& x, const SparseEntry&y) const{
-			return x.first<y.first;
-			}
-		};
-		std::sort(vect.begin(),vect.end(),entrySort());
-	}
+    // move to hpp
+    void sort(){
+        struct entrySort{
+            bool operator()(const SparseEntry& x, const SparseEntry&y) const{
+            return x.first<y.first;
+            }
+        };
+        std::sort(vect.begin(),vect.end(),entrySort());
+    }
 
-	std::size_t size() const {return vect.size();};	
+    std::size_t size() const {return vect.size();};
 
 
         // COPY/MOVE operations
@@ -66,8 +66,8 @@ namespace la {
         bool operator ==(const Vec&) const;
         bool operator !=(const Vec&) const;
 
-	iterator begin(){return vect.begin();}
-	iterator end(){return vect.end();}
+    iterator begin(){return vect.begin();}
+    iterator end(){return vect.end();}
 
 
         /// resizes the vector
@@ -220,9 +220,9 @@ namespace la {
         timeunit vector_time;
     public:
         TimeVector(const int& dim);
-       	TimeVector(const Vec&, const timeunit&);
-        
-	TimeVector(const Vec&, const std::vector<timeunit>&, const timeunit&);
+        TimeVector(const Vec&, const timeunit&);
+
+    TimeVector(const Vec&, const std::vector<timeunit>&, const timeunit&);
         // TODO add constructor to convert a VectorWrapper to TimeVector
 
         /// resizes the vector and sets the time steps
@@ -302,16 +302,16 @@ namespace la {
         Matrix(Mat&&);
         Mat& operator =(Mat&&);
 
-	void lazyInsert(Vector<number,timeunit>& v,timeunit &t,int i){
-		mat[i] = v;
-		col_times[i] = t;	
-	}	
+        void lazyInsert(Vector<number,timeunit>& v,timeunit &t,int i){
+            mat[i] = v;
+            col_times[i] = t;
+        }
 
-	// if a self map we can copy col times
-	// to row times
-       void copyTimes(){
-       		row_times = col_times;
-       }
+        // if a self map we can copy col times
+        // to row times
+        void copyTimes(){
+            row_times = col_times;
+        }
         // comparison
 
         /// equality operator
@@ -367,9 +367,10 @@ namespace la {
         void solve(const Mat& B, Mat& X) const;
 
 
-	/// for relative homology we have to be able to zero out 
-	// rows
-	void zeroRows(std::vector<int> &);	
+        /// for relative homology we have to be able to zero out
+        /// rows
+        void zeroRows(std::vector<int> &);
+        void zeroColumns(const std::vector<int>&);
 
     private:
         // helper constructors

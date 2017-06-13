@@ -45,9 +45,9 @@ namespace strct {
     public:
         // inherit all the constructors from matrix
         using Mat::Mat;
-	using Mat::lazyInsert;
-	using Mat::copyTimes;
-	using Mat::isReducedForm;	
+        using Mat::lazyInsert;
+        using Mat::copyTimes;
+        using Mat::isReducedForm;	
         /// applies itself to the space
         Space<number,timeunit> operator ()(const Space<number,timeunit>& space) const;
         /// maps the vector

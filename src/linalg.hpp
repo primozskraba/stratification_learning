@@ -347,7 +347,7 @@ namespace la {
             vec(dim),
             simplex_times(dim, 0),
             vector_time(0) {}
- 
+
     template <typename number,typename timeunit>
     TimeVector<number,timeunit>::TimeVector(const Vec& _vec, const timeunit& _vector_time):
         vec(_vec),
@@ -810,13 +810,21 @@ namespace la {
     /*
    template<typename number,typename timeunit>
     void Matrix<number,timeunit>::zeroRows(std::vector<int> &z){
-   	for(auto& x : mat){
-		for(auto ind : z ){
-		
-		}	
-	}
+    for(auto& x : mat){
+        for(auto ind : z ){
+
+        }
+    }
     }
 */
+
+    template <typename number, typename timeunit>
+    void Matrix<number,timeunit>::zeroColumns(const std::vector<int>& column_idxs) {
+        for (const int& colN : column_idxs) {
+            assert(0 <= colN && colN < cols());
+            mat[colN].makeZero();
+        }
+    }
 
 
     template <typename number,typename timeunit>

@@ -13,7 +13,7 @@ namespace ts {
 
     public:
         static constexpr double INF= std::numeric_limits<decltype(ts)>::infinity();
-        static constexpr double UNDEFINED = std::numeric_limits<decltype(ts)>::max();
+        static constexpr double UNDEFINED = std::numeric_limits<decltype(ts)>::quiet_NaN();
 
         /// default constructor (sets to undefined if called without an argument)
         constexpr tstepdouble(const double& ts=UNDEFINED);
@@ -46,7 +46,7 @@ namespace ts {
     constexpr bool operator ==(const double&, const tstepdouble&);
 
     std::ostream& operator <<(std::ostream& os, const tstepdouble& ts);
-    
+
 }
 
 #include "tstepdouble.hpp"

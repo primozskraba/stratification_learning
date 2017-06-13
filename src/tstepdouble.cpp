@@ -2,8 +2,8 @@
 
 namespace ts {
 
-    /* const double tstepdouble::INF; */
-    /* const double tstepdouble::UNDEFINED; */
+    constexpr double tstepdouble::INF;
+    constexpr double tstepdouble::UNDEFINED;
 
     std::ostream& operator <<(std::ostream& os, const tstepdouble& ts) {
 
