@@ -12,8 +12,8 @@ namespace ts {
         double ts;
 
     public:
-        static constexpr double INF= std::numeric_limits<decltype(ts)>::max();
-        static constexpr double UNDEFINED = std::numeric_limits<decltype(ts)>::max()-1;
+        static constexpr double INF= std::numeric_limits<decltype(ts)>::infinity();
+        static constexpr double UNDEFINED = std::numeric_limits<decltype(ts)>::max();
 
         /// default constructor (sets to undefined if called without an argument)
         constexpr tstepdouble(const double& ts=UNDEFINED);
