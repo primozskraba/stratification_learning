@@ -92,6 +92,25 @@ namespace la {
     }
 
     template <typename number, typename timeunit>
+    void Vector<number,timeunit>::setZero(const int& valN) {
+        assert(0 <= valN && valN < dim());
+
+        const auto cmp = [](const SparseEntry& entry, const int& dim) { return entry.first < dim; };
+        const auto entry_ptr = std::lower_bound(vect.begin(), vect.end(), valN, cmp);
+
+        if (entry_ptr != vect.end() && entry_ptr->first == valN) {
+            vect.erase(entry_ptr);
+        }
+    }
+
+    template <typename number, typename timeunit>
+    void Vector<number,timeunit>::setZero(const std::vector<int>& dimensions) {
+        for (const int& valN : dimensions) {
+            setZero(valN);
+        }
+    }
+
+    template <typename number, typename timeunit>
     bool Vector<number,timeunit>::isZero() const {
         return vect.empty();
     }
@@ -804,20 +823,6 @@ namespace la {
         }
     }
 
-
-    // TODO - double check this implementation
-    //
-    /*
-   template<typename number,typename timeunit>
-    void Matrix<number,timeunit>::zeroRows(std::vector<int> &z){
-    for(auto& x : mat){
-        for(auto ind : z ){
-
-        }
-    }
-    }
-*/
-
     template <typename number, typename timeunit>
     void Matrix<number,timeunit>::zeroColumns(const std::vector<int>& column_idxs) {
         for (const int& colN : column_idxs) {
@@ -826,6 +831,13 @@ namespace la {
         }
     }
 
+    template <typename number, typename timeunit>
+    void Matrix<number,timeunit>::zeroRows(const std::vector<int>& row_idxs) {
+        const int n_cols = cols();
+        for (int colN = 0; colN < n_cols; colN++) {
+            mat[colN].setZero(row_idxs);
+        }
+    }
 
     template <typename number,typename timeunit>
     Matrix<number,timeunit> operator *(const Matrix<number,timeunit>& A, const Matrix<number,timeunit>& B) {

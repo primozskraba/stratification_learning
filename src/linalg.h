@@ -39,20 +39,19 @@ namespace la {
         /// constructs a vector with a single non-zero entry
         Vector(const int& dim, const SparseEntry&);
 
+        void pushBack(int i,number x){vect.push_back(SparseEntry(i,x)); }
 
-    void pushBack(int i,number x){vect.push_back(SparseEntry(i,x)); }
+        // move to hpp
+        void sort(){
+            struct entrySort{
+                bool operator()(const SparseEntry& x, const SparseEntry&y) const{
+                return x.first<y.first;
+                }
+            };
+            std::sort(vect.begin(),vect.end(),entrySort());
+        }
 
-    // move to hpp
-    void sort(){
-        struct entrySort{
-            bool operator()(const SparseEntry& x, const SparseEntry&y) const{
-            return x.first<y.first;
-            }
-        };
-        std::sort(vect.begin(),vect.end(),entrySort());
-    }
-
-    std::size_t size() const {return vect.size();};
+        std::size_t size() const {return vect.size();};
 
 
         // COPY/MOVE operations
@@ -66,14 +65,18 @@ namespace la {
         bool operator ==(const Vec&) const;
         bool operator !=(const Vec&) const;
 
-    iterator begin(){return vect.begin();}
-    iterator end(){return vect.end();}
+        iterator begin(){return vect.begin();}
+        iterator end(){return vect.end();}
 
 
         /// resizes the vector
         void resize(const int& dim);
         /// makes the vector [0,0,...,0]
         void makeZero();
+        /// sets the entry at the specified dimension to zero
+        void setZero(const int&);
+        /// sets the entries at the specified dimensions to zero
+        void setZero(const std::vector<int>&);
         /// returns true if this is a zero vector
         bool isZero() const;
 
@@ -369,7 +372,7 @@ namespace la {
 
         /// for relative homology we have to be able to zero out
         /// rows
-        void zeroRows(std::vector<int> &);
+        void zeroRows(const std::vector<int>&);
         void zeroColumns(const std::vector<int>&);
 
     private:

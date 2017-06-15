@@ -281,6 +281,36 @@ TEST(Matrix, zeroColumns) {
     ASSERT_EQ(A, A_expected);
 }
 
+TEST(Matrix, zeroRows) {
+    TernaryMatrix A = {
+        {
+            { 1, 0, 0, 1, 0 },
+            { 0, 1, 0, 1, 0 },
+            { 0, 1, 1, 0, 1 },
+            { 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 1, 0 }
+        },
+        { 0, 1, 2, 3, 4 },
+        { 0, 1, 2, 3, 4 }
+    };
+
+    TernaryMatrix A_expected = {
+        {
+            { 1, 0, 0, 1, 0 },
+            { 0, 0, 0, 0, 0 },
+            { 0, 1, 1, 0, 1 },
+            { 0, 0, 0, 0, 0 },
+            { 0, 0, 0, 0, 0 }
+        },
+        { 0, 1, 2, 3, 4 },
+        { 0, 1, 2, 3, 4 }
+    };
+
+    A.zeroRows({ 1, 4 });
+
+    ASSERT_EQ(A, A_expected);
+}
+
 TEST(Matrix, multiply) {
     BinaryMatrix I = {
         {1, 0, 0},
