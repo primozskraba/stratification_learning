@@ -20,9 +20,9 @@ include_directories         (${CGAL_INCLUDE_DIRS})
 
 
 # COMPILER FLAGS
-if(CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-Wall -ansi -Wno-deprecated -pthread -std=c++14)
-endif()
+# if(CMAKE_COMPILER_IS_GNUCXX)
+# endif()
+add_definitions(-Wall -ansi -Wno-deprecated -pthread -std=c++14 )
 
 # INCLUDE DIRECTORIES
 # include_directories(${GTEST_INCLUDE_DIRS})
@@ -37,7 +37,7 @@ set(TEST_FILES tests.cpp)
 file(GLOB SRC_FILES ../src/*.cpp)
 
 # LIBRARIES
-add_library(libraryCode ${SRC_FILES})
+add_library(toplib ${SRC_FILES})
 
 
 # EXECUTABLES
@@ -45,6 +45,5 @@ add_executable(runUnitTests tests.cpp ${TEST_FILES})
 
 # LINK LIBRARIES
 target_link_libraries(runUnitTests ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES} pthread)
-target_link_libraries(runUnitTests libraryCode)
-
-target_link_libraries   (runUnitTests ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES})
+target_link_libraries(runUnitTests toplib)
+target_link_libraries(runUnitTests ${CGAL_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES})
