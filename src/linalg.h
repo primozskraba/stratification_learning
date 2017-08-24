@@ -79,6 +79,8 @@ namespace la {
         void setZero(const std::vector<int>&);
         /// returns true if this is a zero vector
         bool isZero() const;
+        /// inverts the vector (by negating all the elements)
+        void makeNegative();
 
         int dim() const { return dimension; }
         /// returns the index of the highest non-zero dimension
@@ -357,7 +359,7 @@ namespace la {
         // OPERATIONS
 
         /// sets all the linearly dependent vectors to 0
-        void reduce();
+        void reduce(const bool& del_zeros=false);
 
         /// mulitplication
         void multiply(const Mat&, Mat&) const;

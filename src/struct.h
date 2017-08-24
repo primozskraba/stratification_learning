@@ -55,6 +55,8 @@ namespace strct {
 
         /// finds this maps kernal and image
         void decompose(Space<number,timeunit>& kernel, Space<number,timeunit>& image) const;
+        /// find the kernel
+        void kernel(Space<number,timeunit>& kernel) const;
         /// maps the basis vectors of the input space
         void apply(const Space<number,timeunit>&, Space<number,timeunit>&) const;
         /// maps the vector
@@ -63,6 +65,9 @@ namespace strct {
         /// returns the barcode
         /// TODO: Luka to Primoz: please think of a good name for this function and write a comment :)
         void getDomainImgTimeDiffs(std::vector<std::pair<timeunit,timeunit>>&) const;
+
+        Map<number,timeunit> operator +(const Map<number,timeunit>&) const;
+        Map<number,timeunit> operator -(const Map<number,timeunit>&) const;
 
         /// finds a map from the domain space to the image space
         static void find(const Space<number,timeunit>& domain, Map<number,timeunit>&, const Space<number,timeunit>& image);
@@ -94,6 +99,10 @@ namespace strct {
 
     using BinaryModule = Module<binary>;
     using TernaryModule = Module<ternary>;
+
+    template <typename number, typename timeunit>
+    void relativeHomology(const Module<number,timeunit>&, const Map<number,timeunit>&,
+            const Module<number,timeunit>&, const Map<number,timeunit>&, const Module<number,timeunit>&);
 }
 
 #include "struct.hpp"

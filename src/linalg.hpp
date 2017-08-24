@@ -116,6 +116,13 @@ namespace la {
     }
 
     template <typename number, typename timeunit>
+    void Vector<number,timeunit>::makeNegative() {
+        for (int valN = 0; valN < vect.size(); ++valN) {
+            vect[valN].second = -vect[valN].second;
+        }
+    }
+
+    template <typename number, typename timeunit>
     int Vector<number,timeunit>::pivotDim() const {
         return isZero() ? -1 : vect.back().first;
     }
@@ -616,9 +623,8 @@ namespace la {
     }
 
     template <typename number,typename timeunit>
-    void Matrix<number,timeunit>::reduce() {
-        const int col_dim = cols();
-        for (int colN = 0; colN < col_dim; colN++) {
+    void Matrix<number,timeunit>::reduce(const bool& del_zeros) {
+        for (int colN = 0; colN < cols(); colN++) {
             Vec& curr_col = mat[colN];
             bool change = true;
 
@@ -634,6 +640,12 @@ namespace la {
                         break;
                     }
                 }
+            }
+
+            if (del_zeros && curr_col.isZero()) {
+                mat.erase(mat.begin() + colN);
+                col_times.erase(col_times.begin() + colN);
+                --colN;
             }
         }
     }
