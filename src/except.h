@@ -8,9 +8,9 @@ namespace except {
     class NotInImageSpaceException : public std::exception {
     public:
         explicit NotInImageSpaceException(const std::string& msg);
-        ~NotInImageSpaceException() _NOEXCEPT {}
+        ~NotInImageSpaceException() noexcept {}
 
-        const char* what() const _NOEXCEPT;
+        const char* what() const noexcept;
     private:
         std::string msg;
     };
