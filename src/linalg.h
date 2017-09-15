@@ -39,7 +39,7 @@ namespace la {
         /// constructs a vector with a single non-zero entry
         Vector(const int& dim, const SparseEntry&);
 
-        void pushBack(int i,number x){vect.push_back(SparseEntry(i,x)); }
+        void pushBack(const int& dim, const number& val){vect.push_back(SparseEntry(dim, val)); }
 
         // move to hpp
         void sort(){
@@ -307,9 +307,14 @@ namespace la {
         Matrix(Mat&&);
         Mat& operator =(Mat&&);
 
-        void lazyInsert(Vector<number,timeunit>& v,timeunit &t,int i){
-            mat[i] = v;
-            col_times[i] = t;
+        void lazyInsert(Vector<number,timeunit>& col_vec,timeunit &t,int col_n){
+            mat[col_n] = col_vec;
+            col_times[col_n] = t;
+        }
+        void lazyAppend(const int& rowN, const int& colN, const number& val) {
+            if (val != 0) {
+                mat[colN].pushBack(rowN, val);
+            }
         }
 
         // if a self map we can copy col times

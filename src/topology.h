@@ -10,7 +10,7 @@
 #include <boost/functional/hash.hpp>
 
 
-#include "struct.h"
+#include "toprep.h"
 namespace top{
 
     // simplex class - mainly for templating
@@ -139,7 +139,7 @@ namespace top{
 
 
    template<typename number, typename timeunit, typename indextype>
-   strct::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C);
+   toprep::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C);
        
 
     // I/O
@@ -148,7 +148,7 @@ namespace top{
 
 
     template<typename number, typename timeunit, typename indextype>
-    strct::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B);
+    toprep::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B);
 
 
 

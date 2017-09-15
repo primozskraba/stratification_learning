@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 
 
 namespace top{
@@ -115,7 +114,7 @@ namespace top{
 
 	template<typename indextype>
 	indextype Simplex<indextype>::operator [](const int& index) const {
-		assert(0 <= index && index<= this->dim());
+		DEBUG_ASSERT(0 <= index && index<= this->dim());
 
 		return vertex_list[index];
 	}
@@ -128,7 +127,7 @@ namespace top{
 	template<typename indextype>
 	Simplex<indextype> Simplex<indextype>::erase(const int& index) const {
 		Simp temp(*this);
-		assert(0 <= index && index<= this->dim());
+		DEBUG_ASSERT(0 <= index && index<= this->dim());
 		
 		temp.vertex_list.erase(temp.vertex_list.begin()+index);
 		return temp;
@@ -272,16 +271,16 @@ namespace top{
  
    template<typename timeunit, typename indextype>
    const Simplex<indextype>& Complex<timeunit,indextype>::operator [](const int& index) const{ 
-	 assert(0 <= index && index< this->num_simplices);
+	 DEBUG_ASSERT(0 <= index && index< this->num_simplices);
 	return data[index].first;
    } 	
 
  template<typename number, typename timeunit, typename indextype>
-   strct::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C){
-        assert(C.is_finalized());
-        assert(C.verify());
+   toprep::Map<number,timeunit> boundary(Complex<timeunit,indextype>& C){
+    ASSERT(C.is_finalized());
+    ASSERT(C.verify());
 	int complex_size = C.size();
-	strct::Map<number,timeunit> D(complex_size,complex_size);
+	toprep::Map<number,timeunit> D(complex_size,complex_size);
 	for(auto i = 0; i< complex_size;++i){
 		la::Vector<number,timeunit> chain(complex_size);
 		number coeff = -1;
@@ -307,15 +306,15 @@ namespace top{
    }
 
  template<typename number, typename timeunit, typename indextype>
-    strct::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B){
-	assert(C_A.is_finalized());
-        assert(C_A.verify());
-	assert(C_B.is_finalized());
-        assert(C_B.verify());
+    toprep::Map<number,timeunit> relativeBoundary(Complex<timeunit,indextype>& C_A,Complex<timeunit,indextype>& C_B){
+	ASSERT(C_A.is_finalized());
+    ASSERT(C_A.verify());
+	ASSERT(C_B.is_finalized());
+    ASSERT(C_B.verify());
 
 	int complex_size = C_A.size() + C_B.size();
 
-	strct::Map<number,timeunit> D(complex_size,complex_size);
+	toprep::Map<number,timeunit> D(complex_size,complex_size);
 	int ind_A=0;
 	int ind_B=0;
 

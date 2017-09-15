@@ -1,8 +1,8 @@
-#include "struct.h"
+#include "toprep.h"
 
 #include "gtest/gtest.h"
 
-using namespace strct;
+using namespace toprep;
 
 TEST(Module, constructor) {
     BinaryMap boundry = {
@@ -21,7 +21,7 @@ TEST(Module, constructor) {
             { 0, 0,    0, 0, 0, 0,    0, 0,    0,    1, 1 },
 
             { 0, 0,    0, 0, 0, 0,    0, 0,    0,    0, 0 },
-            { 0, 0,    0, 0, 0, 0,    0, 0,    0,    0, 0 },
+            { 0, 0,    0, 0, 0, 0,    0, 0,    0,    0, 0 }
         },
         { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 5 },
         { 0, 0, 1, 1, 1, 1, 2, 2, 3, 4, 5 }

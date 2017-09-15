@@ -1,9 +1,9 @@
 #include "linalg.h"
-#include "struct.h"
+#include "toprep.h"
 
 #include "gtest/gtest.h"
 
-using namespace strct;
+using namespace toprep;
 using namespace la;
 
 TEST(Map, apply) {

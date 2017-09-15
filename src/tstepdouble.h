@@ -2,8 +2,9 @@
 #define _TSTEPDOUBLE_H
 
 #include <iostream>
-#include <cassert>
 #include <limits>
+
+#include "except.h"
 
 
 namespace ts {
@@ -12,6 +13,8 @@ namespace ts {
         double ts;
 
     public:
+        using val_type = double;
+
         static constexpr double INF= std::numeric_limits<decltype(ts)>::infinity();
         static constexpr double UNDEFINED = std::numeric_limits<decltype(ts)>::quiet_NaN();
 

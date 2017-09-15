@@ -48,7 +48,7 @@ TEST(Matrix, initializer_list) {
 
     // test if an exception is throws if an incorrect number of row or column times is specified
 #ifndef NDEBUG
-    EXPECT_DEATH(
+    ASSERT_ANY_THROW(
         TernaryMatrix C(
             {
                 { 2, 1, 0 },
@@ -56,12 +56,11 @@ TEST(Matrix, initializer_list) {
             },
             { 2, 1 },
             { 1, 3, 8 }
-        );,
-        ""
+        );
     );
 #endif
 #ifndef NDEBUG
-    EXPECT_DEATH(
+    ASSERT_ANY_THROW(
         TernaryMatrix C(
             {
                 { 2, 1, 0 },
@@ -69,12 +68,11 @@ TEST(Matrix, initializer_list) {
             },
             { 2, 3 },
             { 1, 3, 2 }
-        );,
-        ""
+        );
     );
 #endif
 #ifndef NDEBUG
-    EXPECT_DEATH(
+    ASSERT_ANY_THROW(
         TernaryMatrix C(
             {
                 { 2, 1, 0 },
@@ -82,12 +80,11 @@ TEST(Matrix, initializer_list) {
             },
             { 2, 4, 6 },
             { 1, 3, 8 }
-        );,
-        ""
+        );
     );
 #endif
 #ifndef NDEBUG
-    EXPECT_DEATH(
+    ASSERT_ANY_THROW(
         TernaryMatrix D(
             {
                 { 2, 1, 0 },
@@ -95,8 +92,7 @@ TEST(Matrix, initializer_list) {
             },
             { 2, 4 },
             { 1, 3, 8, 10 }
-        );,
-        ""
+        );
     );
 #endif
 }
@@ -609,10 +605,9 @@ TEST(Matrix, solve) {
         { 0, 1, 1, 2, 2, 2, 3, 3, 4, 4 }
     };
     TernaryMatrix X1;
-    EXPECT_DEATH({
+    ASSERT_ANY_THROW({
             solve(A_time1, X1, C_time1);
-        },
-        ""
+        }
     );
 #endif
 

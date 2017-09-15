@@ -7,4 +7,12 @@ namespace except {
     const char* NotInImageSpaceException::what() const noexcept {
         return msg.c_str();
     }
+
+    AssertException::AssertException(const std::string& _line, const std::string& _cond):
+        line(_line),
+        cond(_cond) {}
+
+    const char* AssertException::what() const noexcept {
+        return (line + ": " + cond).c_str();
+    }
 }

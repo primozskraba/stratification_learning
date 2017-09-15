@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <cassert>
 
 #include "util.h"
 #include "except.h"
@@ -32,7 +31,7 @@ namespace la {
     Vector<number,timeunit>::Vector(const int& dim, const SparseEntry& entry):
             vect(),
             dimension(dim) {
-        assert(0 <= entry.first && entry.first < dim);
+        ASSERT(0 <= entry.first && entry.first < dim);
 
         if (entry.second != 0) {
             vect.push_back(entry);
@@ -93,7 +92,7 @@ namespace la {
 
     template <typename number, typename timeunit>
     void Vector<number,timeunit>::setZero(const int& valN) {
-        assert(0 <= valN && valN < dim());
+        DEBUG_ASSERT(0 <= valN && valN < dim());
 
         const auto cmp = [](const SparseEntry& entry, const int& dim) { return entry.first < dim; };
         const auto entry_ptr = std::lower_bound(vect.begin(), vect.end(), valN, cmp);
@@ -129,13 +128,13 @@ namespace la {
 
     template <typename number, typename timeunit>
     number Vector<number,timeunit>::pivot() const {
-        assert(!isZero());
+        DEBUG_ASSERT(!isZero());
         return vect.back().second;
     }
 
     template <typename number, typename timeunit>
     number Vector<number,timeunit>::operator [](const int& i) const {
-        assert(0 <= i && i < dim());
+        DEBUG_ASSERT(0 <= i && i < dim());
 
         const auto cmp = [](const SparseEntry& el, const int& row_n) { return el.first < row_n; };
         const auto el_ptr = std::lower_bound(vect.begin(), vect.end(), i, cmp);
@@ -146,7 +145,7 @@ namespace la {
 
     template <typename number, typename timeunit>
     number Vector<number,timeunit>::operator *(const Vec& other) const {
-        assert(dim() == other.dim());
+        ASSERT(dim() == other.dim());
 
         const vector& vect_a = vect;
         const vector& vect_b = other.vect;
@@ -175,7 +174,7 @@ namespace la {
 
     template <typename number, typename timeunit>
     void Vector<number,timeunit>::add(const Vec& b, Vec& result) const {
-        assert(dim() == b.dim());
+        ASSERT(dim() == b.dim());
 
         // dimension
         result.dimension = dim();
@@ -225,7 +224,7 @@ namespace la {
 
     template <typename number, typename timeunit>
     void Vector<number,timeunit>::add(const Vec& b, const number& k, Vec& result) const {
-        assert(dim() == b.dim());
+        ASSERT(dim() == b.dim());
 
         result.dimension = dim();
         vector& result_vec = result.vect;
@@ -391,7 +390,7 @@ namespace la {
     template <typename number,typename timeunit>
     void TimeVector<number,timeunit>::resize(const int& dim, const std::vector<timeunit>& _simplex_times,
             const timeunit& _vector_time) {
-        assert(_simplex_times.size() == size_t(dim));
+        ASSERT(_simplex_times.size() == size_t(dim));
         vec.resize(dim);
         simplex_times = _simplex_times;
         vector_time = _vector_time;
@@ -476,16 +475,16 @@ namespace la {
             }
         }
 
-        assert(rows() == static_cast<int>(input.size()));
-        assert(cols() == static_cast<int>(mat.size()));
+        ASSERT(rows() == static_cast<int>(input.size()));
+        ASSERT(cols() == static_cast<int>(mat.size()));
 
         // check that all the sequence of time steps is correct
 #ifndef NDEBUG
         for (size_t rowN = 1; rowN < row_times.size(); rowN++) {
-            assert(row_times[rowN-1] <= row_times[rowN]);
+            DEBUG_ASSERT(row_times[rowN-1] <= row_times[rowN]);
         }
         for (size_t colN = 1; colN < col_times.size(); colN++) {
-            assert(col_times[colN-1] <= col_times[colN]);
+            DEBUG_ASSERT(col_times[colN-1] <= col_times[colN]);
         }
 #endif
     }
@@ -541,20 +540,20 @@ namespace la {
 
     template <typename number,typename timeunit>
     typename Matrix<number,timeunit>::Entry Matrix<number,timeunit>::operator () (const int& rowN, const int& colN) const {
-        assert(0 <= rowN && rowN < rows());
-        assert(0 <= colN && colN < cols());
+        DEBUG_ASSERT(0 <= rowN && rowN < rows());
+        DEBUG_ASSERT(0 <= colN && colN < cols());
         return { mat[colN][rowN], getEntryTime(rowN, colN) };
     }
 
     template <typename number,typename timeunit>
     timeunit Matrix<number,timeunit>::getColTime(const int& colN) const {
-        assert(0 <= colN && colN < cols());
+        DEBUG_ASSERT(0 <= colN && colN < cols());
         return col_times[colN];
     }
 
     template <typename number,typename timeunit>
     timeunit Matrix<number,timeunit>::getRowTime(const int& rowN) const {
-        assert(0 <= rowN && rowN < rows());
+        DEBUG_ASSERT(0 <= rowN && rowN < rows());
         return row_times[rowN];
     }
 
@@ -565,7 +564,7 @@ namespace la {
 
     template <typename number,typename timeunit>
     VectorWrapper<number,timeunit> Matrix<number,timeunit>::operator [](const int& colN) const {
-        assert(0 <= colN && colN < cols());
+        DEBUG_ASSERT(0 <= colN && colN < cols());
         return VectorWrapper<number,timeunit>(mat[colN], row_times, col_times[colN]);
     }
 
@@ -652,7 +651,7 @@ namespace la {
 
     template <typename number,typename timeunit>
     void Matrix<number,timeunit>::multiply(const Mat& B, Mat& C) const {
-        assert(cols() == B.rows());
+        ASSERT(cols() == B.rows());
 
         const int out_rows = rows();
         const int out_cols = B.cols();
@@ -678,8 +677,8 @@ namespace la {
 
     template <typename number,typename timeunit>
     void Matrix<number,timeunit>::multiply(const IVector<number,timeunit>& vec, TmVector& result) const {
-        assert(vec.dim() == cols());
-        assert(rows() == result.dim());
+        ASSERT(vec.dim() == cols());
+        ASSERT(rows() == result.dim());
 
         result.resize(rows(), row_times, vec.getTimeStep());
 
@@ -762,8 +761,8 @@ namespace la {
 
     template <typename number,typename timeunit>
     void Matrix<number,timeunit>::solve(const Mat& B, Mat& X) const {
-        assert(isReducedForm());
-        assert(row_times == B.row_times);
+        ASSERT(isReducedForm());
+        ASSERT(row_times == B.row_times);
 
         const int dimA = cols();
         const int dimB = B.cols();
@@ -838,7 +837,7 @@ namespace la {
     template <typename number, typename timeunit>
     void Matrix<number,timeunit>::zeroColumns(const std::vector<int>& column_idxs) {
         for (const int& colN : column_idxs) {
-            assert(0 <= colN && colN < cols());
+            ASSERT(0 <= colN && colN < cols());
             mat[colN].makeZero();
         }
     }

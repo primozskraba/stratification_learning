@@ -26,7 +26,7 @@ geometricTriangulation2::geometricTriangulation2(std::initializer_list<std::vect
 }
 
 void geometricTriangulation2::insertPoint(const std::vector<double> &p){
-	assert(p.size()==2);
+	DEBUG_ASSERT(p.size()==2);
 	DT.insert(Point(p[0],p[1]));
 }
 
@@ -139,7 +139,7 @@ geometricTriangulation3::geometricTriangulation3(std::initializer_list<std::vect
 }
 
 void geometricTriangulation3::insertPoint(const std::vector<double> &p){
-	assert(p.size()==3);
+	DEBUG_ASSERT(p.size()==3);
 	DT.insert(Point(p[0],p[1],p[2]));
 }
 
@@ -255,7 +255,7 @@ geometricTriangulationD<D>::geometricTriangulationD(std::initializer_list<std::v
 
 template<const int D>
 void geometricTriangulationD<D>::insertPoint(const std::vector<double> &p){
-	assert(p.size()==D);
+	DEBUG_ASSERT(p.size()==D);
 
 	DT.insert(Point(p.begin(),p.end()));
 }

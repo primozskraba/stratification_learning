@@ -102,7 +102,7 @@ auto A = boundary<ternary,ts::tstep>(C);
 
 //std::cout<<A<<std::endl;
 std::vector<std::pair<ts::tstep,ts::tstep> > bc;
-strct::Module<ternary,ts::tstep> M(A);
+toprep::Module<ternary,ts::tstep> M(A);
 
 M.getBarcode(bc);
 for(auto i:bc){

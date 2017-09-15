@@ -2,16 +2,20 @@
 #define _TSTEP_H
 
 #include <iostream>
-#include <cassert>
 #include <limits>
+
+#include "except.h"
 
 
 namespace ts {
+
     class tstep {
     private:
         int ts;
 
     public:
+        using val_type = int;
+
         static constexpr int INF= std::numeric_limits<decltype(ts)>::max();
         static constexpr int UNDEFINED = std::numeric_limits<decltype(ts)>::max()-1;
 
@@ -46,7 +50,7 @@ namespace ts {
     constexpr bool operator ==(const int&, const tstep&);
 
     std::ostream& operator <<(std::ostream& os, const tstep& ts);
-    
+
 }
 
 #include "tstep.hpp"

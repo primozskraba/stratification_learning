@@ -24,22 +24,22 @@ namespace ts {
     }
 
     constexpr bool tstep::operator <(const tstep& other) const {
-        assert(!isUndefined() && !other.isUndefined());
+        DEBUG_ASSERT(!isUndefined() && !other.isUndefined());
         return ts < other.ts;
     }
 
     constexpr bool tstep::operator <=(const tstep& other) const {
-        assert(!isUndefined() && !other.isUndefined());
+        DEBUG_ASSERT(!isUndefined() && !other.isUndefined());
         return ts <= other.ts;
     }
 
     constexpr tstep tstep::operator +(const tstep& other) const {
-        assert(!isUndefined() && !other.isUndefined());
+        DEBUG_ASSERT(!isUndefined() && !other.isUndefined());
         return ts + other.ts;
     }
 
     constexpr tstep tstep::operator -(const tstep& other) const {
-        assert(!isUndefined() && !other.isUndefined());
+        DEBUG_ASSERT(!isUndefined() && !other.isUndefined());
         return ts - other.ts;
     }
 
