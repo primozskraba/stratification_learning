@@ -8,11 +8,13 @@ namespace except {
         return msg.c_str();
     }
 
-    AssertException::AssertException(const std::string& _line, const std::string& _cond):
+    AssertException::AssertException(const std::string& _file, const int& _line,
+            const std::string& _cond):
+        file(_file),
         line(_line),
         cond(_cond) {}
 
     const char* AssertException::what() const noexcept {
-        return (line + ": " + cond).c_str();
+        return (file + " line " + std::to_string(line) + ": " + cond).c_str();
     }
 }

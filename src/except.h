@@ -18,12 +18,14 @@ namespace except {
 
     class AssertException : public std::exception {
     public:
-        explicit AssertException(const std::string& line, const std::string& cond);
+        explicit AssertException(const std::string& file, const int& line,
+                const std::string& cond);
         ~AssertException() noexcept {}
 
         const char* what() const noexcept;
     private:
-        std::string line;
+        std::string file;
+        int line;
         std::string cond;
     };
 }
@@ -32,21 +34,20 @@ namespace except {
 #define DEBUG_ASSERT(cond)
 #else
 #define DEBUG_ASSERT(COND) \
-    ((COND) ? \
-         static_cast<void>(0) : \
-         throw except::AssertException( \
-             static_cast<std::ostringstream&>(std::ostringstream() << __FILE__ << " line " << __LINE__).str(), \
-             #COND \
-         ) \
-     )
+    if (!(COND)) { \
+        throw except::AssertException( \
+                std::string(__FILE__), \
+                __LINE__, \
+                std::string(#COND) \
+                ); \
+    }
 #endif
 #define ASSERT(COND) \
-     ((COND) ? \
-          static_cast<void>(0) : \
-          throw except::AssertException( \
-              static_cast<std::ostringstream&>(std::ostringstream() << __FILE__ << " line " << __LINE__).str(), \
-              #COND \
-          ) \
-      )
-
+    if (!(COND)) { \
+        throw except::AssertException( \
+                std::string(__FILE__), \
+                __LINE__, \
+                std::string(#COND) \
+                ); \
+    }
 #endif
